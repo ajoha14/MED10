@@ -1,44 +1,45 @@
 import numpy as np
-import cv2 as cv
-import argparse
-
-
+import cv2
 
 #Functions
-def getFeatures(videoCapture):
-    ret, frame =  videoCapture.read()
-    frame = cv.cvtColor(frame,cv.COLOR_BGR2GRAY)
-    features = cv.goodFeaturesToTrack(frame,100,0.01,10)
-    features = np.int0(features)
-    #paint features
-    for i in features:
-        x,y = i.ravel()
-        cv.circle(frame,(x,y),3,255,-1)
-    return frame, features
+def findFace(videoCapture):
+    # Capture frame-by-frame
+    ret, frame = videoCapture.read()
+    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-def getface(videoCapture):
-    #Get Frame
-    print("Get face")
+    faces = faceCascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=1, minSize=(1,1))
+    
+    # Draw a rectangle around the faces
+    face = [0,0,0,0]
+    for f in faces:
+        if face[2]*face[3] < f[2]*f[3]:
+            face = f
+    
+    # Display the resulting frame
+    return frame, face
 
-def turnLeft():
-    print("turning left")
-
-def turnRight():
-    print("turn right")
+def turn(turnFactor):
+    print("Turning: " + str(turnFactor))
 
 
 #Initialization
-cap = cv.VideoCapture(0)
-
+cap = cv2.VideoCapture(0)
+faceCascade = cv2.CascadeClassifier("c:/Users/Anders S. Johansen/Documents/MED10/facedetection/faceDetectWeights.xml")
 
 #Run
 while(True):
-    im,f = getFeatures(cap)
-    cv.imshow("Capture",im)
-    print("updated frame")
-    cv.waitKey(0)
+    frame,face = findFace(cap)
+    xOffset = 0
+    if face[2]*face[3] > 20000: #Face size threshold
+        cv2.rectangle(frame, (face[0], face[1]), (face[0]+face[2], face[1]+face[3]), (0, 255, 0), 2)
+        xOffset = int(frame.shape[1]/2) - int(face[0]+(face[3]/2))
+        cv2.line(frame, (int(frame.shape[1]/2),100), (int(frame.shape[1]/2)+xOffset,100),(255,0,0),5)
+        cv2.imshow("Face",frame)
+    turn(xOffset)
+
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
 
 #Cleanup
 cap.release()
-cv.destroyAllWindows()
-
+cv2.destroyAllWindows()
