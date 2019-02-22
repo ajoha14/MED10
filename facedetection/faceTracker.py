@@ -22,6 +22,7 @@ def turn(turnFactor):
     print("Turning: " + str(turnFactor))
 
 
+
 #Initialization
 cap = cv2.VideoCapture(0)
 faceCascade = cv2.CascadeClassifier("c:/Users/Anders S. Johansen/Documents/MED10/facedetection/faceDetectWeights.xml")
@@ -32,7 +33,7 @@ while(True):
     xOffset = 0
     if face[2]*face[3] > 20000: #Face size threshold
         cv2.rectangle(frame, (face[0], face[1]), (face[0]+face[2], face[1]+face[3]), (0, 255, 0), 2)
-        xOffset = int(frame.shape[1]/2) - int(face[0]+(face[3]/2))
+        xOffset = int(face[0]+(face[3]/2))- int(frame.shape[1]/2)
         cv2.line(frame, (int(frame.shape[1]/2),100), (int(frame.shape[1]/2)+xOffset,100),(255,0,0),5)
         cv2.imshow("Face",frame)
     turn(xOffset)
