@@ -14,6 +14,16 @@ args = parser.parse_args()
 if args.debug == True:
     print("RUNNING IN DEBUG MODE")
 
+## Initialize parallel ##
+
+
+#Read Data
+
+#Handle signals
+
+#Vizualize
+
+#Infer robot modifier
 
 
 
