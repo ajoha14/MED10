@@ -1,5 +1,5 @@
 import argparse
-from sensors.ArduinoSerialPortCommunicator import SerialReader
+from Signals.ArduinoSerialPortCommunicator import SerialReader
 
 #Initialization - Arguments
 parser = argparse.ArgumentParser(description="Multi Modal Affect Detection")
