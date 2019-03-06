@@ -5,8 +5,8 @@ Description missing
 This is a list of the software and hardware required to execute this program
 
 ### Python Packages
-Numpy
-MatplotLib 2.x
+* Numpy
+* MatplotLib 2.x
 
 ### Software
 * Python 3.7
