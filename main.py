@@ -7,9 +7,13 @@ args = parser.parse_args()
 
 #Initialization - Sawyer
 
+#Initialization - Arduino
+
 
 ##### MAIN #####
 if args.debug == True:
     print("RUNNING IN DEBUG MODE")
+
+
 
 
