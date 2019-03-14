@@ -1,15 +1,17 @@
 # MED10
-Description missing
+Code repository for the "insert title" masters thesis by Jesper and Anders
 
 ## REQUIREMENTS
 This is a list of the software and hardware required to execute this program
 
-### Python Packages
-* Numpy
-* MatplotLib 2.x
-
 ### Software
 * Python 3.7
+
+#### Python Packages
+* Numpy
+* MatplotLib 2.x
+* Heartpy 1.x
+*
 
 ### Hardware
 
@@ -22,4 +24,6 @@ This is a list of the software and hardware required to execute this program
 ### Parameters
 
 ## Contributers and acknowledgements
+Anders Skaarup Johansen
+Jesper Wædeled Henriksen
 
