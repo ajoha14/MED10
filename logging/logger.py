@@ -25,22 +25,3 @@ def logDataPoint(hr,hrv,gsr):
 def logCustom(data):
     with open(logFolder + currentSessionName, 'a') as f:
         f.write("{},{}\n".format(datetime.datetime.now(),data))
-
-
-createNewLog()
-logDataPoint(1,0,0)
-logDataPoint(2,0,0)
-logDataPoint(3,0,0)
-logDataPoint(4,0,0)
-logDataPoint(5,0,0)
-logCustom('Robot Task Started')
-logDataPoint(1,0,0)
-logDataPoint(1,0,0)
-logDataPoint(1,0,0)
-logDataPoint(1,0,0)
-logDataPoint(1,0,0)
-logDataPoint(1,0,0)
-logCustom('Robot Task Ended')
-logDataPoint(1,0,0)
-logDataPoint(1,0,1)
-
