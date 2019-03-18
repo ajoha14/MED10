@@ -7,6 +7,7 @@ class SerialReader:
         if not self.ser.is_open:
             self.ser.open()
 
-    def current_input(self):
-        return self.ser.readline()
+    def current_data(self):
+        #[:-2] removes one of the 'newline' at the end of all inputs
+        return self.ser.readline().decode("utf-8")[:-2]
 

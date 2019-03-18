@@ -1,5 +1,6 @@
 import argparse
 from Signals.ArduinoSerialPortCommunicator import SerialReader
+from misc import logger
 from datetime import datetime
 
 #Initialization - Arguments
@@ -15,16 +16,10 @@ args = parser.parse_args()
 def __main__():
     if args.debug:
         print("RUNNING IN DEBUG MODE")
-    print("Bob")
     serialport = SerialReader('COM5')
-    with open("C:/Users/Jesper W Henriksen/Dokumenter/Med10/data.txt", 'w+') as f:
-        print("opened file")
-        while True:
-            line = str(serialport.current_input())
-            print(line[2:-5])
-            f.writelines(line[2:-5]+"\n")
-            #+","+str(datetime.now())+"\n")
-
+    logger.create_new_log()
+    while True:
+        logger.log_custom(serialport.current_data())
 
 __main__()
 
