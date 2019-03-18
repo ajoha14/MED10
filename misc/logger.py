@@ -3,6 +3,8 @@ import os
 import datetime
 
 #Session Variables
+from itertools import count
+
 global currentSessionName
 currentSessionName = 'Blank'
 logFolder = "./Logs/"
@@ -33,3 +35,11 @@ def log_custom(data):
     with open(currentSessionName, 'a') as f:
         f.write("{},{}\n".format(datetime.datetime.now(), data))
 
+def get_data_from_log(log):
+    data = []
+    with open(log, 'rt') as f:
+        reader = csv.reader(f, delimiter=',', skipinitialspace=True)
+        cols = next(reader)
+        for col in cols:
+            data.append(col)
+    return data
