@@ -9,5 +9,9 @@ class SerialReader:
 
     def current_data(self):
         #[:-2] removes one of the 'newline' at the end of all inputs
+        output = self.ser.readline().decode("utf-8")[:-2]
+        print(output)
+        if output.count(",") is not 1:
+            return "error"
         return self.ser.readline().decode("utf-8")[:-2]
 
