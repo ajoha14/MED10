@@ -11,16 +11,14 @@ void setup ( )
   Serial.begin (9600);
 }
 
-int hr  = 0
-int GSR = 0
+int hr  = 0;
+int GSR = 0;
 void loop ()
 {
   digitalWrite(output_GSR_Pin, HIGH);
   
   hr = analogRead (input_HR_Pin);
-  GSR = analogRead(input_GSR_Pin);'
+  GSR = analogRead(input_GSR_Pin);
   
-  Serial.print(GSR);
-  Serial.print (",");
-  Serial.println(hr);
+  Serial.println(String(GSR));//+','+String(hr));
 }
