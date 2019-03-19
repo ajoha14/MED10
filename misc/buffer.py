@@ -1,17 +1,16 @@
 import numpy as np
-
 class Buffer:
-    def __init__(self, s):
+    def __init__(self, sz=5):
         self.data = np.array([])
-        self.size = s
-    
+        self.size = sz
+
     def add(self, lmnt):
         if len(self.data) >= self.size:
             self.data = self.data[1:]
-            np.append(self.data, lmnt)
+            self.data = np.append(self.data, lmnt)
         else:
-            np.append(self.data, lmnt)
-    
+            self.data = np.append(self.data, lmnt)
+
     def removeOldest(self):
         self.data = self.data[1:]
     
