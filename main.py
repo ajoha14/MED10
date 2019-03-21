@@ -32,20 +32,21 @@ class Worker:
         self.serialport = SerialReader(port='COM5')
 
     def work(self):
-        #log = Logger()
+        log = Logger()
         keyboard.add_hotkey('space', self.toogleLoop, args=())
-        gsrbuffer = Buffer(1000)
+        gsrbuffer = Buffer(10000)
         while self.looping:
             if self.serialport.ser is not None:
                 currentData = self.serialport.current_data()
                 if currentData is not 'error':
-                    gsr, hr = currentData.split(',', 2)
+                    time, gsr, hr = currentData.split(',', 3)
                     gsr, hr = int(gsr), int(hr)
                     gsrbuffer.add(gsr)
                 #print(gsrbuffer.data)
                 if gsrbuffer.isFull():
-                    print(sum(math.slope_of(gsrbuffer.data)))
-                #log.logString(currentData)
+                    break
+                    #print(sum(math.slope_of(gsrbuffer.data)))
+                log.logString(currentData)
             else:
                 self.toogleLoop()
 

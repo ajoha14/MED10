@@ -19,15 +19,12 @@ class Logger:
 
     def logDataPoint(self, hr, hrv, gsr):
         with open(self.currentSessionName, 'a') as f:
-            time = datetime.utcnow().strftime('%m_%d-%H_%M_%S.%f')
-            f.write("{},{},{},{}\n".format(time, hr, hrv, gsr))
+            f.write("{},{},{}\n".format(hr, hrv, gsr))
 
     def logString(self, data):
         with open(self.currentSessionName, 'a') as f:
-            time = datetime.utcnow().strftime('%m_%d-%H_%M_%S.%f')
-            f.write("{},{}\n".format(time, data))
+            f.write(data + "\n")
 
-    @staticmethod
     def getDataFromLog(log):
         data = []
         print("opening " + str(log))
