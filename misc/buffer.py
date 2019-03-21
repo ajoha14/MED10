@@ -1,8 +1,7 @@
-import numpy as np
 class Buffer:
-    def __init__(self, sz=5):
+    def __init__(self, size=5):
         self.data = []
-        self.size = sz
+        self.size = size
 
     def add(self, lmnt):
         if len(self.data) >= self.size:
