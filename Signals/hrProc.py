@@ -6,14 +6,17 @@ class hrProcesser:
     def __init__(self):
         self.dtFormat = '%m_%d-%H_%M_%S.%f'
 
-    def heartRate(self, data):
-        tt = datetime.timedelta(microseconds=0)
-        if len(data) > 2:
-            for i in range(len(data)-1):
-                d1 = datetime.datetime.strptime(data[i], self.dtFormat)
-                d2 = datetime.datetime.strptime(data[i+1], self.dtFormat)
-                tt += d2-d1
-        hr = ((len(data)-1) / tt.total_seconds()) * 60
+    def heartRate(self, hrSig, hrTimestamp):
+        peaks = ampd(hrSig)
+        peaksTimeStamps = hrTimestamp[peaks]
+        totalTime = datetime.timedelta(microseconds=0)
+
+        if len(peaksTimeStamps) > 2:
+            for i in range(len(peaksTimeStamps)-1):
+                d1 = datetime.datetime.strptime(peaksTimeStamps[i], self.dtFormat)
+                d2 = datetime.datetime.strptime(peaksTimeStamps[i+1], self.dtFormat)
+                totalTime += d2-d1
+        hr = ((len(peaksTimeStamps)-1) / totalTime.total_seconds()) * 60
         return hr
 
     def ampd(self, sigInput, LSMlimit = 1): #by https://github.com/LucaCerina/ampdLib
@@ -36,8 +39,7 @@ class hrProcesser:
             -------
             pks: ndarray
                 The ordered array of peaks found in sigInput
-        """
-            
+        """            
         # Create preprocessing linear fit	
         sigTime = np.arange(0, len(sigInput))
         
@@ -56,40 +58,3 @@ class hrProcesser:
         
         pks = np.where(np.sum(LSM[0:np.argmin(np.sum(LSM, 1)), :], 0)==0)[0]
         return pks
-
-    def ampdFast(self, sigInput, order, LSMlimit = 1): #Fast AMPD by https://github.com/LucaCerina/ampdLib
-        """A slightly faster version of AMPD which divides the signal in 'order' windows
-            Parameters
-            ----------
-            sigInput: ndarray
-                The 1D signal given as input to the algorithm
-            order: int
-                The number of windows in which sigInput is divided
-            Returns
-            -------
-            pks: ndarray
-                The ordered array of peaks found in sigInput 
-        """
-
-        # Check if order is valid (perfectly separable)
-        if(len(sigInput)%order != 0):
-            print("AMPD: Invalid order, decreasing order")
-            while(len(sigInput)%order != 0):
-                order -= 1
-            print("AMPD: Using order " + str(order))
-
-        N = int(len(sigInput) / order / 2)
-
-        # Loop function calls
-        for i in range(0, len(sigInput)-N, N):
-            print("\t sector: " + str(i) + "|" + str((i+2*N-1)))
-            pksTemp = ampd(sigInput[i:(i+2*N-1)], LSMlimit)
-            if(i == 0):
-                pks = pksTemp
-            else:
-                pks = np.concatenate((pks, pksTemp+i))
-            
-        # Keep only unique values
-        pks = np.unique(pks)
-        return pks
-        

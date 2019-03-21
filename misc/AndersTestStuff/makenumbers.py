@@ -10,6 +10,6 @@ with open("C:/Users/Anders S. Johansen/Desktop/data.txt") as f:
     with open("C:/Users/Anders S. Johansen/Desktop/data2.txt",'w+') as o:
         for i in range(len(data)):
             t = now + timedelta(seconds=0.6)
-            o.write("{},{}\n".format(data[i], (t.strftime(dateformat))))
+            o.write("{},{},{}\n".format(t.strftime(dateformat), 0, data[i]))
 
 
