@@ -7,7 +7,7 @@ class Logger:
         self.currentSessionName = 'Blank'
         self.logFolder = "./Logs/"
         if path is None:
-            self.currentSessionName = self.logFolder + datetime.utcnow().strftime('%m_%d-%H_%M_%S')
+            self.currentSessionName = self.logFolder + datetime.utcnow().strftime('%m_%d-%H_%M_%S')+'.csv'
         else:
             self.currentSessionName = path
         if os.path.isfile(self.currentSessionName):
@@ -30,8 +30,10 @@ class Logger:
     @staticmethod
     def getDataFromLog(log):
         data = []
+        print("opening " + str(log))
         with open(log, 'rt') as f:
             reader = csv.reader(f, delimiter=',', skipinitialspace=True)
             for col in reader:
+                print(col)
                 data.append(col)
         return data

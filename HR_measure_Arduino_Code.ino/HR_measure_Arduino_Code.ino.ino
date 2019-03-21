@@ -8,6 +8,8 @@ int input_GSR_Pin = A2;
 void setup ( )
 {
   pinMode(input_HR_Pin, INPUT);
+  pinMode(input_GSR_Pin, INPUT);
+
   Serial.begin (9600);
 }
 
@@ -20,5 +22,5 @@ void loop ()
   hr = analogRead (input_HR_Pin);
   GSR = analogRead(input_GSR_Pin);
   
-  Serial.println(String(GSR));//+','+String(hr));
+  Serial.println(String(GSR)+','+String(hr));
 }
