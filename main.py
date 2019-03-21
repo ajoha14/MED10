@@ -4,7 +4,7 @@ from numpy.distutils.system_info import f2py_info
 
 from Signals.ArduinoSerialPortCommunicator import SerialReader
 from misc.log import Logger
-from misc.buffer2 import Buffer
+from misc.buffer import Buffer
 import misc.math as math
 import keyboard
 
@@ -32,20 +32,20 @@ class Worker:
         self.serialport = SerialReader(port='COM5')
 
     def work(self):
-        log = Logger()
+        #log = Logger()
         keyboard.add_hotkey('space', self.toogleLoop, args=())
-        buffer = Buffer(30)
+        gsrbuffer = Buffer(1000)
         while self.looping:
             if self.serialport.ser is not None:
                 currentData = self.serialport.current_data()
                 if currentData is not 'error':
-                    edr, hr = currentData.split(',', 2)
-                    print(edr)
-                    buffer.add(int(edr))
-                print(buffer.data)
-                if buffer.isFull():
-                    print(math.slope_of(buffer.data))
-                log.logString(currentData)
+                    gsr, hr = currentData.split(',', 2)
+                    gsr, hr = int(gsr), int(hr)
+                    gsrbuffer.add(gsr)
+                #print(gsrbuffer.data)
+                if gsrbuffer.isFull():
+                    print(sum(math.slope_of(gsrbuffer.data)))
+                #log.logString(currentData)
             else:
                 self.toogleLoop()
 

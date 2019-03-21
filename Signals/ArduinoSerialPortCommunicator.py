@@ -1,5 +1,5 @@
 import serial
-
+from datetime import datetime
 
 class SerialReader:
     def __init__(self, port):
@@ -14,9 +14,9 @@ class SerialReader:
 
     def current_data(self):
         #[:-2] removes one of the 'newline' at the end of all inputs
-        output = self.ser.readline().decode("utf-8")[:-2]
+        output = datetime.utcnow().strftime('%m_%d-%H_%M_%S') + "," + self.ser.readline().decode("utf-8")[:-2]
         #output = inputSerial.split(',', 2)
-        if output.count(",") is not 1:
+        if output.count(",") is not 2:
             return "error"
         return output
 
