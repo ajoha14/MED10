@@ -3,16 +3,8 @@ import datetime
 from misc.buffer import Buffer
 
 class hrProcesser:
-    def __init__(self, bd, sl):
-        self.baud = bd
-        self.sampleLength = sl
-        self.hrbuffer = Buffer(self.sampleLength * self.baud)
+    def __init__(self):
         self.dtFormat = '%m_%d-%H_%M_%S.%f'
-    
-    def peakDetection(self, data):
-        peaks = []
-        #FindPeaks
-        return peaks
 
     def heartRate(self, data):
         tt = datetime.timedelta(microseconds=0)
@@ -24,9 +16,8 @@ class hrProcesser:
         hr = ((len(data)-1) / tt.total_seconds()) * 60
         return hr
 
-    def ampd(sigInput, LSMlimit = 1): #by https://github.com/LucaCerina/ampdLib
+    def ampd(self, sigInput, LSMlimit = 1): #by https://github.com/LucaCerina/ampdLib
         """Find the peaks in the signal with the AMPD algorithm.
-        
             Original implementation by Felix Scholkmann et al. in
             "An Efficient Algorithm for Automatic Peak Detection in 
             Noisy Periodic and Quasi-Periodic Signals", Algorithms 2012,
@@ -66,7 +57,7 @@ class hrProcesser:
         pks = np.where(np.sum(LSM[0:np.argmin(np.sum(LSM, 1)), :], 0)==0)[0]
         return pks
 
-    def ampdFast(sigInput, order, LSMlimit = 1): #Fast AMPD by https://github.com/LucaCerina/ampdLib
+    def ampdFast(self, sigInput, order, LSMlimit = 1): #Fast AMPD by https://github.com/LucaCerina/ampdLib
         """A slightly faster version of AMPD which divides the signal in 'order' windows
             Parameters
             ----------
@@ -100,6 +91,5 @@ class hrProcesser:
             
         # Keep only unique values
         pks = np.unique(pks)
-        
         return pks
         
