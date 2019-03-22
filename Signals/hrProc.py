@@ -6,17 +6,16 @@ class hrProcesser:
     def __init__(self):
         self.dtFormat = '%m_%d-%H_%M_%S.%f'
 
-    def heartRate(self, hrSig, hrTimestamp, minPeaks=2):
+    def heartRate(self, hrSig, hrTimestamp, minPeaks=3):
         peaks = self.ampd(hrSig)
-        totalTime = datetime.timedelta(microseconds=0)
-
         if len(peaks) > minPeaks:
             peaksTimeStamps = hrTimestamp[peaks]
+            totalTime = datetime.timedelta(microseconds=0)
             for i in range(len(peaksTimeStamps)-1):
                 d1 = datetime.datetime.strptime(peaksTimeStamps[i], self.dtFormat)
                 d2 = datetime.datetime.strptime(peaksTimeStamps[i+1], self.dtFormat)
                 totalTime += d2 - d1
-            return ((len(peaks)-1) / totalTime.total_seconds()) * 60
+            return ((len(peaksTimeStamps)-1) / totalTime.total_seconds()) * 60
         else:
             return 0.0
 

@@ -6,7 +6,7 @@ import numpy as np
 c = hrProcesser()
 hrbuffer = Buffer(size=500)
 tsbuffer = Buffer(size=500)
-with open("Logs/AndersTestLog.csv") as f:
+with open("Logs/AndersTestLog2.txt") as f:
     data = np.array(f.read().splitlines())
 
 
@@ -31,8 +31,8 @@ for i in range(len(data)):
         plt.plot(hrbuffer.data)
         disppeaks = []
         for dp in l:
-            disppeaks.append(data[int(dp)])        
+            disppeaks.append(hrbuffer.data[int(dp)])        
         plt.scatter(l,disppeaks)
         plt.show()
-        plt.pause(0.1)
+        plt.pause(0.001)
 
