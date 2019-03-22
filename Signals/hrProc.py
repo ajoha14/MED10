@@ -6,18 +6,19 @@ class hrProcesser:
     def __init__(self):
         self.dtFormat = '%m_%d-%H_%M_%S.%f'
 
-    def heartRate(self, hrSig, hrTimestamp):
-        peaks = ampd(hrSig)
-        peaksTimeStamps = hrTimestamp[peaks]
+    def heartRate(self, hrSig, hrTimestamp, minPeaks=2):
+        peaks = self.ampd(hrSig)
         totalTime = datetime.timedelta(microseconds=0)
 
-        if len(peaksTimeStamps) > 2:
+        if len(peaks) > minPeaks:
+            peaksTimeStamps = hrTimestamp[peaks]
             for i in range(len(peaksTimeStamps)-1):
                 d1 = datetime.datetime.strptime(peaksTimeStamps[i], self.dtFormat)
                 d2 = datetime.datetime.strptime(peaksTimeStamps[i+1], self.dtFormat)
-                totalTime += d2-d1
-        hr = ((len(peaksTimeStamps)-1) / totalTime.total_seconds()) * 60
-        return hr
+                totalTime += d2 - d1
+            return ((len(peaks)-1) / totalTime.total_seconds()) * 60
+        else:
+            return 0.0
 
     def ampd(self, sigInput, LSMlimit = 1): #by https://github.com/LucaCerina/ampdLib
         """Find the peaks in the signal with the AMPD algorithm.

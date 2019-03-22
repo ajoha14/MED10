@@ -17,19 +17,22 @@ ax = fig.add_subplot(1,1,1)
 
 
 for i in range(len(data)):
-    hrbuffer.add(float(data[i].split(',',3)[2]))
-    tsbuffer.add(data[i].split(',',3)[1])
+    hrbuffer.add(int(data[i].split(',',3)[2]))
+    tsbuffer.add(data[i].split(',',3)[0])
     if len(hrbuffer.data) == hrbuffer.size:       
-        print(hrbuffer.data)
-        print(tsbuffer.data)
         #Do calculations
-        l = c.ampd(hrbuffer.data) #Peak Detectoin  
-        hrs = c.heartRate(hrbuffer.data,tsbuffer.data)   
+        hrdat = np.asarray(hrbuffer.data)
+        tsdat = np.asarray(tsbuffer.data)
+        l = c.ampd(hrdat) #Peak Detectoin  
+        hrs = c.heartRate(hrdat,tsdat)
         #Update plot
         ax.clear()
-        ax.set_title("HearRate: {}".format(hrs))
-        ax.plot(data)
-        ax.scatter(l,data[l])
+        ax.set_title("HeartRate: {}".format(hrs))
+        plt.plot(hrbuffer.data)
+        disppeaks = []
+        for dp in l:
+            disppeaks.append(data[int(dp)])        
+        plt.scatter(l,disppeaks)
         plt.show()
-        plt.pause(0.001)
+        plt.pause(0.1)
 
