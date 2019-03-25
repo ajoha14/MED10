@@ -19,3 +19,6 @@ class Buffer:
         else:
             return False
 
+    def flush(self):
+        self.data = []
+

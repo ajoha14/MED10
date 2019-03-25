@@ -6,7 +6,8 @@ import numpy as np
 c = hrProcesser()
 hrbuffer = Buffer(size=500)
 tsbuffer = Buffer(size=500)
-with open("Logs/AndersTestLog2.txt") as f:
+#with open("Logs/AndersTestLog2.txt") as f:
+with open("Logs/03_21-14_16_27.csv") as f:
     data = np.array(f.read().splitlines())
 
 
@@ -16,7 +17,7 @@ fig = plt.figure()
 ax = fig.add_subplot(1,1,1)
 
 
-for i in range(len(data)):
+for i in range(1,len(data)):
     hrbuffer.add(int(data[i].split(',',3)[2]))
     tsbuffer.add(data[i].split(',',3)[0])
     if len(hrbuffer.data) == hrbuffer.size:       

@@ -3,7 +3,8 @@ import numpy as np
 from numpy.distutils.system_info import f2py_info
 
 from Signals.ArduinoSerialPortCommunicator import SerialReader
-from misc.log import Logger
+from misc.logging import Logger
+import misc.logging as logging
 from misc.buffer import Buffer
 import misc.math as math
 import keyboard
@@ -32,26 +33,32 @@ class Worker:
         self.serialport = SerialReader(port='COM5')
 
     def work(self):
-        log = Logger()
         keyboard.add_hotkey('space', self.toogleLoop, args=())
-        gsrbuffer = Buffer(10000)
-        while self.looping:
-            if self.serialport.ser is not None:
+        if self.serialport.ser is not None:
+            log = Logger()
+            gsrbuffer = Buffer(10000)
+            while self.looping:
                 currentData = self.serialport.current_data()
                 if currentData is not 'error':
                     time, gsr, hr = currentData.split(',', 3)
                     gsr, hr = int(gsr), int(hr)
                     gsrbuffer.add(gsr)
-                #print(gsrbuffer.data)
+                    #print(gsrbuffer.data)
                 if gsrbuffer.isFull():
                     break
                     #print(sum(math.slope_of(gsrbuffer.data)))
                 log.logString(currentData)
-            else:
-                self.toogleLoop()
-
+        else:
+            print("works")
+            hrList = logging.getGSRFromLog("Logs/03_21-14_16_27.csv")
+            print(hrList)
+            print(math.slope_of(hrList))
+            print(math.slope_steps(hrList,5))
+            print(sum(math.slope_of(hrList)))
+            print(np.mean(math.slope_of(hrList)))
 
     def toogleLoop(self):
+        print("Toogling Loop...")
         self.looping = not self.looping
 
 
