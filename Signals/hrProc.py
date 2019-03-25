@@ -19,42 +19,29 @@ class hrProcesser:
         else:
             return 0.0
 
-    def ampd(self, sigInput, LSMlimit = 1): #by https://github.com/LucaCerina/ampdLib
-        """Find the peaks in the signal with the AMPD algorithm.
-            Original implementation by Felix Scholkmann et al. in
-            "An Efficient Algorithm for Automatic Peak Detection in 
-            Noisy Periodic and Quasi-Periodic Signals", Algorithms 2012,
-            5, 588-603
-            Parameters
-            ----------
-            sigInput: ndarray
-                The 1D signal given as input to the algorithm
-            lsmLimit: float
-                Wavelet transform limit as a ratio of full signal length.
-                Valid values: 0-1, the LSM array will no longer be calculated after this point
-                which results in the inability to find peaks at a scale larger than this factor.
-                For example a value of .5 will be unable to find peaks that are of period 
-                1/2 * signal length, a default value of 1 will search all LSM sizes.
-            Returns
-            -------
-            pks: ndarray
-                The ordered array of peaks found in sigInput
-        """            
-        # Create preprocessing linear fit	
-        sigTime = np.arange(0, len(sigInput))
+    def smoothSignal(self, signal, window=10):
+        smoothedSignal = []
+        for i in range(len(signal)-window):
+            smoothedSignal.append(np.mean(signal[i:i+window]))
+        return np.asarray(smoothedSignal)
+
+
+    def ampd(self, sigInput, limit = 1): #by https://github.com/LucaCerina/ampdLib          
+        #Create preprocessing linear fit	
+        sigIn = np.arange(0, len(sigInput))
         
-        # Detrend
-        dtrSignal = (sigInput - np.polyval(np.polyfit(sigTime, sigInput, 1), sigTime)).astype(float)
-        
+        #Calculate detrending
+        dtrSignal = (sigInput - np.polyval(np.polyfit(sigIn, sigInput, 1), sigIn)).astype(float)
         N = len(dtrSignal)
-        L = int(np.ceil(N*LSMlimit / 2.0)) - 1
+        L = int(np.ceil(N*limit / 2.0)) - 1
         
-        # Generate random matrix
+        #Generate matrix of Ones
         LSM = np.ones([L,N], dtype='uint8')
         
-        # Local minima extraction
+        #Local minima extraction
         for k in range(1, L):
             LSM[k - 1, np.where((dtrSignal[k:N - k - 1] > dtrSignal[0: N - 2 * k - 1]) & (dtrSignal[k:N - k - 1] > dtrSignal[2 * k: N - 1]))[0]+k] = 0
         
+        #Isolate Peaks
         pks = np.where(np.sum(LSM[0:np.argmin(np.sum(LSM, 1)), :], 0)==0)[0]
         return pks
