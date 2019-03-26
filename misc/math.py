@@ -11,7 +11,7 @@ def slope_of(data):
     i = 0
     for x1 in data:
         if i + 1 < len(data):
-            slope[i] = (data[i + 1] - x1) / 1
+            slope[i] = (data[i + 1] - x1)
         i = i + 1
     return slope[:-1]
 
@@ -22,15 +22,22 @@ def slope_steps(data,step):
     #Slope = (y2 - y1)/(x2-x1)
     """
     slope = []
-    i = 0
     buffer = Buffer(step)
     for subset in data:
         buffer.add(subset)
         if buffer.isFull():
-            for x1 in buffer.data:
-                if i + 1 < len(data):
-                    #print(buffer.data)
-                    slope.append((data[i + 1] - x1) / 1)
-                i = i + 1
+            subslope = slope_of(buffer.data)
+            mean = np.mean(subslope)
+            slope.append(mean)
             buffer.flush()
-    return slope[:-1]
+    return slope
+
+def moving_average(data, step):
+    output = []
+    buffer = Buffer(step)
+    for subset in data:
+        buffer.add(subset)
+        if buffer.isFull():
+            mean = np.mean(buffer.data)
+            output.append(mean)
+    return output

@@ -7,6 +7,7 @@ from misc.logging import Logger
 import misc.logging as logging
 from misc.buffer import Buffer
 import misc.math as math
+import matplotlib.pyplot as plt
 import keyboard
 
 #Initialization - Arguments
@@ -39,23 +40,35 @@ class Worker:
             gsrbuffer = Buffer(10000)
             while self.looping:
                 currentData = self.serialport.current_data()
-                if currentData is not 'error':
+                """if currentData is not 'error':
                     time, gsr, hr = currentData.split(',', 3)
                     gsr, hr = int(gsr), int(hr)
                     gsrbuffer.add(gsr)
                     #print(gsrbuffer.data)
                 if gsrbuffer.isFull():
                     break
-                    #print(sum(math.slope_of(gsrbuffer.data)))
+                    #print(sum(math.slope_of(gsrbuffer.data)))"""
                 log.logString(currentData)
         else:
             print("works")
-            hrList = logging.getGSRFromLog("Logs/03_21-14_16_27.csv")
-            print(hrList)
-            print(math.slope_of(hrList))
-            print(math.slope_steps(hrList,5))
-            print(sum(math.slope_of(hrList)))
-            print(np.mean(math.slope_of(hrList)))
+            gsrList = logging.getGSRFromLog("Logs/03_26-11_58_17.csv")
+            print(gsrList)
+            mean = math.moving_average(gsrList,100)
+            #slope =math.slope_of(gsrList)
+            #subslope = math.slope_steps(gsrList,30)
+            #print(slope)
+            #print(subslope)
+            #print(sum(subslope))
+            #print(sum(slope))
+            #print(np.mean(slope))
+            #print(np.mean(subslope))
+            plt.figure(1)
+            plt.plot(gsrList)
+            plt.figure(2)
+            #plt.plot(slope)
+            #plt.plot(subslope)
+            plt.plot(mean)
+            plt.show()
 
     def toogleLoop(self):
         print("Toogling Loop...")
