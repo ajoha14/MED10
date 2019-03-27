@@ -31,12 +31,15 @@ def getGSRFromLog(log):
     print("Opening file: '" + str(log) + "'")
     with open(log, 'rt') as f:
         reader = csv.reader(f, delimiter=',', skipinitialspace=True)
+        i=0
         for col in reader:
             if first:
                 first = False
                 continue
-            item = int(col[1])
+            item = float(col[1])
             data.append(item)
+            i = i + 1
+            print(i)
     return data
 
 def getTimestampFromLog(log):

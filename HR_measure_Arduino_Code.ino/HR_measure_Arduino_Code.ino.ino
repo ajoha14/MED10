@@ -9,11 +9,11 @@ void setup ( )
   Serial.begin (9600);
 }
 
-int hr  = 0;
+float hr  = 0;
 float GSR = 0;
 void loop ()
 {  
-  //hr = analogRead (input_HR_Pin);
+  hr = analogRead (A0);
   GSR = analogRead(A2);
   delay(50);
   //Serial.println(GSR);

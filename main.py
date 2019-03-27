@@ -40,18 +40,18 @@ class Worker:
             gsrbuffer = Buffer(10000)
             while self.looping:
                 currentData = self.serialport.current_data()
-                """if currentData is not 'error':
-                    time, gsr, hr = currentData.split(',', 3)
+                if currentData is not 'error':
+                    log.logString(currentData)
+                """    time, gsr, hr = currentData.split(',', 3)
                     gsr, hr = int(gsr), int(hr)
                     gsrbuffer.add(gsr)
                     #print(gsrbuffer.data)
                 if gsrbuffer.isFull():
                     break
                     #print(sum(math.slope_of(gsrbuffer.data)))"""
-                log.logString(currentData)
         else:
-            print("works")
-            gsrList = logging.getGSRFromLog("Logs/03_26-11_58_17.csv")
+            print("Arduino not plugged in. Loading data from log instead")
+            gsrList = logging.getGSRFromLog("Logs/onlyGSR.csv")
             print(gsrList)
             mean = math.moving_average(gsrList,100)
             #slope =math.slope_of(gsrList)
