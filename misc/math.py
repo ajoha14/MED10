@@ -15,21 +15,20 @@ def slope_of(data):
         i = i + 1
     return slope[:-1]
 
-def slope_steps(data,step):
+def slope_window(signal, window):
     """
     #The slope between two points is given by the following formula
     #Points (x1, x2), (y1, y2)
     #Slope = (y2 - y1)/(x2-x1)
     """
     slope = []
-    buffer = Buffer(step)
-    for subset in data:
-        buffer.add(subset)
-        if buffer.isFull():
-            subslope = slope_of(buffer.data)
+    subsignal = Buffer(window)
+    for x in signal:
+        subsignal.add(x)
+        if subsignal.isFull():
+            subslope = slope_of(subsignal.data)
             mean = np.mean(subslope)
             slope.append(mean)
-            buffer.flush()
     return slope
 
 def moving_average(signal, window):
