@@ -47,27 +47,22 @@ class Worker:
                     gsrbuffer.add(gsr)
                     #print(gsrbuffer.data)
                 if gsrbuffer.isFull():
-                    break
-                    #print(sum(math.slope_of(gsrbuffer.data)))"""
+                    break"""
         else:
             print("Arduino not plugged in. Loading data from log instead")
-            gsrList = logging.getGSRFromLog("Logs/onlyGSR.csv")
+            gsrList = logging.getGSRFromLog("Logs/03_27-09_04_33.csv")
             print(gsrList)
             mean = math.moving_average(gsrList,100)
-            #slope =math.slope_of(gsrList)
-            #subslope = math.slope_steps(gsrList,30)
-            #print(slope)
-            #print(subslope)
-            #print(sum(subslope))
-            #print(sum(slope))
-            #print(np.mean(slope))
-            #print(np.mean(subslope))
-            plt.figure(1)
-            plt.plot(gsrList)
-            plt.figure(2)
+            #slope = math.slope_of(mean)
+            slopeMovingAverage = math.slope_window(mean, 30)
+            #plt.figure(1)
+            #plt.plot(gsrList)
+            #plt.figure(2)
+            #plt.plot(mean)
+            #plt.figure(3)
             #plt.plot(slope)
-            #plt.plot(subslope)
-            plt.plot(mean)
+            #plt.figure(4)
+            plt.plot(slopeMovingAverage)
             plt.show()
 
     def toogleLoop(self):
