@@ -1,26 +1,27 @@
 from Signals.hrProc import hrProcesser
 from misc.buffer import Buffer
+import misc.math as math
 import matplotlib.pyplot as plt
 import numpy as np
 
 c = hrProcesser()
-hrbuffer = Buffer(size=500)
-tsbuffer = Buffer(size=500)
-with open("Logs/AndersTestLog.csv") as f:
+hrbuffer = Buffer(size=100)
+tsbuffer = Buffer(size=100)
+with open("Logs/03_27-09_04_33.csv") as f:
     data = np.array(f.read().splitlines())
 #SETUP LIVE PLOTTER
 plt.ion()
 fig = plt.figure()
 ax = fig.add_subplot(1,1,1)
 
-for i in range(len(data)):
-    hrbuffer.add(int(data[i].split(',',3)[2]))
+for i in range(1,len(data)):
+    hrbuffer.add(float(data[i].split(',',3)[2]))
     tsbuffer.add(data[i].split(',',3)[0])
     if len(hrbuffer.data) == hrbuffer.size:       
         #Do calculations
-        hrdat = np.asarray(c.smoothSignal(hrbuffer.data,window=10))
+        hrdat = np.asarray(math.moving_average(hrbuffer.data,window=10))
         tsdat = np.asarray(tsbuffer.data)
-        l = c.ampd(hrdat,limit=0.5) #Peak Detectoin  
+        l = math.ampd(hrdat,limit=0.5) #Peak Detectoin  
         hrs = c.heartRate(hrdat,tsdat)
         #plot Data
         disppeaks = []

@@ -31,12 +31,28 @@ def slope_window(signal, window):
             slope.append(mean)
     return slope
 
-def moving_average(data, step):
-    output = []
-    buffer = Buffer(step)
-    for subset in data:
-        buffer.add(subset)
-        if buffer.isFull():
-            mean = np.mean(buffer.data)
-            output.append(mean)
-    return output
+def moving_average(signal, window):
+        smoothedSignal = []
+        for i in range(window, len(signal)):
+            smoothedSignal.append(np.mean(signal[i-window:i]))
+        return np.asarray(smoothedSignal)
+
+def ampd(sigInput, limit = 1): #by https://github.com/LucaCerina/ampdLib          
+        #Create preprocessing linear fit	
+        sigIn = np.arange(0, len(sigInput))
+        
+        #Calculate detrending
+        dtrSignal = (sigInput - np.polyval(np.polyfit(sigIn, sigInput, 1), sigIn)).astype(float)
+        N = len(dtrSignal)
+        L = int(np.ceil(N*limit / 2.0)) - 1
+        
+        #Generate matrix of Ones
+        LSM = np.ones([L,N], dtype='uint8')
+        
+        #Local minima extraction
+        for k in range(1, L):
+            LSM[k - 1, np.where((dtrSignal[k:N - k - 1] > dtrSignal[0: N - 2 * k - 1]) & (dtrSignal[k:N - k - 1] > dtrSignal[2 * k: N - 1]))[0]+k] = 0
+        
+        #Isolate Peaks
+        pks = np.where(np.sum(LSM[0:np.argmin(np.sum(LSM, 1)), :], 0)==0)[0]
+        return pks
