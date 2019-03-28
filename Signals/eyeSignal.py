@@ -112,7 +112,6 @@ def cut_eyebrows(img, imgG):
 
     return img, imgG
 
-
 def draw_blobs(img, keypoints):
     """Draws blobs"""
     cv2.drawKeypoints(img, keypoints, img, (0, 0, 255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
