@@ -2,7 +2,7 @@ import numpy as np
 import datetime
 from misc.buffer import Buffer
 import misc.QuickMaths as qm
-import mathf
+import math
 
 class hrProcesser:
     def __init__(self):
