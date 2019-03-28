@@ -1,5 +1,4 @@
 import numpy as np
-from misc.buffer import Buffer
 
 def slope_of(data):
     """
@@ -22,13 +21,8 @@ def slope_window(signal, window):
     #Slope = (y2 - y1)/(x2-x1)
     """
     slope = []
-    subsignal = Buffer(window)
-    for x in signal:
-        subsignal.add(x)
-        if subsignal.isFull():
-            subslope = slope_of(subsignal.data)
-            mean = np.mean(subslope)
-            slope.append(mean)
+    for i in range(window, len(signal)):
+        slope.append(np.mean(slope_of(signal[i-window:i])))
     return slope
 
 def moving_average(signal, window):
