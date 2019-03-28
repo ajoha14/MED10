@@ -13,18 +13,18 @@ class baseline:
         #Serial Settings
         self.serial = SerialReader(port='COM5')
     
-    def gatherBaseline():
+    def gatherBaseline(self):
         if self.serial.ser is not None:
             isGathering = True
             print('Gathering Baseline physiological signals')
             while isGathering:
-                Data = self.serial.current_data()
-                if Data is not 'error' and not self.timestamps.isfull():
+                currentData = self.serial.current_data()
+                if currentData is not 'error' and not self.timestamps.isfull():
                     time, gsr, hr = currentData.split(',', 3)
                     self.baseHR.add(float(hr))
                     self.baseGSR.add(float(gsr))
                     self.timestamps.add(time)
-        else.
+        else:
             print("Unable to contact arduino, Baseline could not be calculated")
 
 
