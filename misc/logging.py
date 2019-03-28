@@ -39,7 +39,6 @@ def getGSRFromLog(log):
             item = float(col[1])
             data.append(item)
             i = i + 1
-            print(i)
     return data
 
 def getTimestampFromLog(log):
