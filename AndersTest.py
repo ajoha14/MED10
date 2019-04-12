@@ -25,10 +25,24 @@ def testEyeTrack():
         for (i,rect) in enumerate(rects):
             shape = predictor(gray, rect)
             shape = shape_to_np(shape) #36-41(left eye), 42-47(right eye)
-            leye = rect_to_bb(bounding_box(shape[36:41]))
-            reye = rect_to_bb(bounding_box(shape[42:47]))
-            if cv2.waitKey(1) & 0xFF == ord('q'):
-                break
+            lbb = bounding_box(shape[36:41])
+            rbb = bounding_box(shape[42:47])
+
+            #Calculate bounding box width
+            l_width = lbb[1][0] - lbb[0][0]
+            r_width = rbb[1][0] - rbb[0][0]
+            #Calculate bounding box 
+            l_center = (int(lbb[0][0] + l_width/2), int(lbb[0][1] + (lbb[1][1] - lbb[0][1])/2))
+            r_center = (int(rbb[0][0] + l_width/2), int(rbb[0][1] + (rbb[1][1] - rbb[0][1])/2))
+            #Cropout eye
+            l_eye = frame[l_center[1]-int(l_width/2):l_center[1]+int(l_width/2), l_center[0]-int(l_width/2):l_center[0]+int(l_width/2)]
+            r_eye = frame[r_center[1]-int(r_width/2):r_center[1]+int(r_width/2), r_center[0]-int(r_width/2):r_center[0]+int(r_width/2)]
+            
+            if l_eye.shape[0] > 0 and l_eye.shape[1] > 0 and r_eye.shape[0] > 0 and r_eye.shape[1]:
+                cv2.imshow("Left Eye", l_eye)  
+                cv2.imshow("Right Eye", r_eye)     
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
     #Cleanup
     cap.release()
     cv2.destroyAllWindows()
@@ -91,5 +105,9 @@ def shape_to_np(shape, dtype="int"):
 def bounding_box(points):
     x_coordinates, y_coordinates = zip(*points)
     return [(min(x_coordinates), min(y_coordinates)), (max(x_coordinates), max(y_coordinates))]
+
+def iris_segment(image):
+    #Using daugmans method
+    
 
 testEyeTrack()
