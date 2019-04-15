@@ -19,6 +19,7 @@ def testEyeTrack():
     #Run
     while(True):
         ret, frame = cap.read()
+        frame = cv2.imread("C:/Users/Anders S. Johansen/Desktop/im/3.jpg")
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         rects = detector(gray,1)
 
@@ -37,22 +38,19 @@ def testEyeTrack():
             l_center = (int(lbb[0][0] + l_width/2), int(lbb[0][1] + (l_height/2)))
             r_center = (int(rbb[0][0] + l_width/2), int(rbb[0][1] + (r_height/2)))
             #Cropout eye
-            l_eye = frame[l_center[1]-int(l_width/2):l_center[1]+int(l_width/2), l_center[0]-int(l_width/2):l_center[0]+int(l_width/2)]
-            r_eye = frame[r_center[1]-int(r_width/2):r_center[1]+int(r_width/2), r_center[0]-int(r_width/2):r_center[0]+int(r_width/2)]
-            #grey eye
-            l_eye = cv2.cvtColor(l_eye, cv2.COLOR_BGR2GRAY)
-            r_eye = cv2.cvtColor(r_eye, cv2.COLOR_BGR2GRAY)
+            l_eye = gray[l_center[1]-int(l_width/2):l_center[1]+int(l_width/2), l_center[0]-int(l_width/2):l_center[0]+int(l_width/2)]
+            r_eye = gray[r_center[1]-int(r_width/2):r_center[1]+int(r_width/2), r_center[0]-int(r_width/2):r_center[0]+int(r_width/2)]
             #Median Filter
-            l_eye = cv2.medianBlur(l_eye, 5)
-            r_eye = cv2.medianBlur(r_eye, 5)
+            l_eye = cv2.medianBlur(l_eye, 9)
+            r_eye = cv2.medianBlur(r_eye, 9)
             #Histogram equalization
             l_eye = cv2.equalizeHist(l_eye)
             r_eye = cv2.equalizeHist(r_eye)
             #Invert
-            l_eye = (255 - l_eye)
-            r_eye = (255 - r_eye)
+            #l_eye = (255 - l_eye)
+            #r_eye = (255 - r_eye)
             #thresholding
-            circles = cv2.HoughCircles(l_eye,cv2.HOUGH_GRADIENT,1,20,param1=50,param2=30,minRadius=0,maxRadius=0)
+            circles = cv2.HoughCircles(l_eye,cv2.HOUGH_GRADIENT,1,int(l_width/2),param1=50,param2=30,minRadius=int(l_width/10),maxRadius=int(l_width/2))
             
             if circles is not None:
                 circles = np.uint16(np.around(circles))
@@ -71,10 +69,11 @@ def testEyeTrack():
                 cv2.circle(frame, l_center, 1, (255,0,0),1)
                 cv2.circle(frame, r_center, 1, (255,0,0),1)
                 cv2.imshow("Image",frame)
-                cv2.imshow("left eye", cv2.resize(l_eye, (0,0), fx=4, fy=4))
-                cv2.imshow("right eye", cv2.resize(r_eye, (0,0), fx=4, fy=4))
+                cv2.imshow("left eye", l_eye)
+                cv2.imshow("right eye", r_eye)
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
+        cv2.waitKey(2000)
     #Cleanup
     cap.release()
     cv2.destroyAllWindows()
