@@ -73,7 +73,7 @@ class Worker:
         self.looping = not self.looping
 
     def evaluate(self):
-        p = Eval.Ttest()
+        p = Eval.evaluate()
         #print("Ttest result = ")
         #print(p)
 __main__()
