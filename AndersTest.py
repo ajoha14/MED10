@@ -41,24 +41,38 @@ def testEyeTrack():
             l_eye = gray[l_center[1]-int(l_width/2):l_center[1]+int(l_width/2), l_center[0]-int(l_width/2):l_center[0]+int(l_width/2)]
             r_eye = gray[r_center[1]-int(r_width/2):r_center[1]+int(r_width/2), r_center[0]-int(r_width/2):r_center[0]+int(r_width/2)]
             #Median Filter
-            l_eye = cv2.medianBlur(l_eye, 9)
-            r_eye = cv2.medianBlur(r_eye, 9)
+            l_eye = cv2.medianBlur(l_eye, 11)
+            r_eye = cv2.medianBlur(r_eye, 11)
             #Histogram equalization
             l_eye = cv2.equalizeHist(l_eye)
             r_eye = cv2.equalizeHist(r_eye)
-            #Invert
-            #l_eye = (255 - l_eye)
-            #r_eye = (255 - r_eye)
             #thresholding
-            circles = cv2.HoughCircles(l_eye,cv2.HOUGH_GRADIENT,1,int(l_width/2),param1=50,param2=30,minRadius=int(l_width/10),maxRadius=int(l_width/2))
-            
-            if circles is not None:
-                circles = np.uint16(np.around(circles))
-                for i in circles[0,:]:
+            l_edges = auto_canny(l_eye)
+            r_edges = auto_canny(r_eye)
+            l_circles = cv2.HoughCircles(l_edges,cv2.HOUGH_GRADIENT,1,int(l_width/2),param1=50,param2=30,minRadius=0,maxRadius=0)
+            r_circles = cv2.HoughCircles(r_edges,cv2.HOUGH_GRADIENT,1,int(l_width/2),param1=50,param2=30,minRadius=0,maxRadius=0)
+            #Create Mask
+            l_mask = np.zeros(l_eye.shape)
+            r_mask = np.zeros(r_eye.shape)
+            if l_circles is not None:
+                l_circles = np.uint16(np.around(l_circles))
+                for i in l_circles[0,:]:
                     # draw the outer circle
-                    cv2.circle(l_eye,(i[0],i[1]),i[2],(0,255,0),1)
-                    # draw the center of the circle
-                    cv2.circle(l_eye,(i[0],i[1]),2,(0,0,255),2)
+                    cv2.circle(l_mask,(i[0],i[1]),i[2],(255,255,255),-1)
+            if r_circles is not None:
+                r_circles = np.uint16(np.around(r_circles))
+                for i in r_circles[0,:]:
+                    # draw the outer circle
+                    cv2.circle(r_mask,(i[0],i[1]),i[2],(255,255,255),-1)
+        
+
+            #Apply Mask
+            left_eye = frame[l_center[1]-int(l_width/2):l_center[1]+int(l_width/2), l_center[0]-int(l_width/2):l_center[0]+int(l_width/2)]
+            right_eye = frame[r_center[1]-int(r_width/2):r_center[1]+int(r_width/2), r_center[0]-int(r_width/2):r_center[0]+int(r_width/2)]
+            
+            left_eye = cv2.bitwise_and(left_eye, left_eye, l_mask)
+            right_eye = cv2.bitwise_and(right_eye, right_eye, r_mask)
+
 
             #Show Images
             if l_eye.shape[0] > 0 and l_eye.shape[1] > 0 and r_eye.shape[0] > 0 and r_eye.shape[1]:
@@ -69,8 +83,8 @@ def testEyeTrack():
                 cv2.circle(frame, l_center, 1, (255,0,0),1)
                 cv2.circle(frame, r_center, 1, (255,0,0),1)
                 cv2.imshow("Image",frame)
-                cv2.imshow("left eye", l_eye)
-                cv2.imshow("right eye", r_eye)
+                cv2.imshow("left eye", left_mask)
+                cv2.imshow("right eye", right_mask)
                 if cv2.waitKey(1) & 0xFF == ord('q'):
                     break
         cv2.waitKey(2000)
