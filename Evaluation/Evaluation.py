@@ -9,66 +9,73 @@ datapointsPerParticipants = numberOfQuestionPerTasks * numberOfTasks + numberOfI
 
 def evaluate():
     rawdata  = getAllDataFromResultFolder()
-    data = convertDataToMatrix(rawdata)     #Data can be accesssed by using data[Participant][Task][Specific attribute]
+    #participantMatrix = convertDataToParticipantMatrix(rawdata)     #Data can be accesssed by using data[Participant][Task][Specific attribute]
+    taskMatrix = convertToTaskMatrix(rawdata)
+    printData(taskMatrix)
     '''
     print(data[0])
     print(data[1])
     print(data[2])
     '''
-    variance = calculateVariance(data)
+    #variance = calculateVariance(data)
     return 0
 
 def calculateVariance(data):
+    def variance(d):
+        sumOfSquares = 0
+        n = len(d)
+        s = sum(d)
+        for point in range(0, len(d)):
+            sumOfSquares = sumOfSquares + ((d[point] - (s / n)) ** 2)
+        v = sumOfSquares / (n - 1)
+        return v
+
+
     result = []
-    """
-    print(data[1])
-    print(data[1][2])
-    print(len(data[1][1]))
-    
-    p = 1
-    t = 1
-    n = len(data[p][t])
-    s = sum(data[p][t])
-    print(data[p][t])
-    print(s)
-    print(s/n)
-    totalsumOfSquares = 0
-    for point in range(0, len(data[p][t])):
-        sumOfSquares = sumOfSquares + ((data[p][t][point] - (s/n)) ** 2)
-
-    variance = totalsumOfSquares / (n-1)
-    print(variance)
-    """
-    for question in range(1,15):
-        for task in range(1,2):
+    #printData(data)
+    print(data[:])
+    #for task in range(1,numberOfTasks+1):
+        #result.append([])
+        #for question in range(0, numberOfQuestionPerTasks):
             #calculate varience
-            n = len(data[1][1])
-            sumOfSquares = 0
-            average = sum(data[:][task][question]) / n
-            print(average)
-            #for participant in range(0,len(data)):
 
-            #sumOfSquares = (data[:][task][question]-average)**2
-            print(sumOfSquares)
-            result.append(sumOfSquares/(n-1))
-
-    """
-    print(result[0][0])
-    print(result[0][1])
-    print(result[1][0])
-    print(result[1][1])
-
-    print(len(result[0]))
-    print(len(result[1]))
-    """
+            #result[task-1].append(variance(data[])))
     return result
 
+def convertToTaskMatrix(d):
+    result = []
+    for participant in range(1,len(d)):
+        #for task in range(0,numberOfTasks):
+        temp = []
+        for point in range(numberOfInitialQuestions, numberOfInitialQuestions + numberOfQuestionPerTasks):
+            temp.append(d[participant][point])
+            #print(task,point)
+        result.append(temp)
+    return result
+
+def convertDataToParticipantMatrix(rawData):
+    def formatData(d,start):
+        dataLine = [d[start:start + numberOfInitialQuestions]]
+        for step in range(0,numberOfTasks):
+            x = step * numberOfQuestionPerTasks
+            newline = d[start + x + numberOfInitialQuestions : start + x + numberOfInitialQuestions + numberOfQuestionPerTasks]
+            dataLine.append(newline)
+        return dataLine
+
+    result = []
+    for participant in rawData:
+        result.append(formatData(participant,0))
+    return result
+
+def printData(data):
+    for d in data:
+        print(d)
+
 def getAllDataFromResultFolder(seperator = ','):
-    def isEmpty(lst):
-        if lst:
-            return False
-        else:
-            return True
+    def convertToNumber(string):
+        if str.isdigit(string): return float(string)
+        else: return string
+
     data = []
     dirc = os.path.dirname(os.path.abspath("__file__")).replace("\\", "/") + "/Evaluation/Results/"
     for file in os.listdir(dirc):
@@ -76,7 +83,7 @@ def getAllDataFromResultFolder(seperator = ','):
             print("Opening file: '" + str(file) + "'")
             with open(dirc+file, 'rt') as f:
                 reader = csv.reader(f, delimiter=seperator, skipinitialspace=True)
-                if isEmpty(data):
+                if not data:
                     for col in reader:
                         data.append(col)
                 else:
@@ -84,6 +91,9 @@ def getAllDataFromResultFolder(seperator = ','):
             continue
         else:
             continue
+    for participant in range(0,len(data)):
+        for datapoint in range(0,len(data[participant])):
+            data[participant][datapoint] = convertToNumber(data[participant][datapoint])
     print()
     return data
 
@@ -96,32 +106,3 @@ def getDataFromFile(file, seperator = ','):
             data.append(col)
     #data = np.asarray(data)
     return data
-
-
-
-def convertDataToMatrix(rawData):
-    def formatData(d,start):
-        dataLine = [d[start:start + numberOfInitialQuestions]]
-        for step in range(0,numberOfTasks):
-            x = step * numberOfQuestionPerTasks
-            newline = d[start + x + numberOfInitialQuestions : start + x + numberOfInitialQuestions + numberOfQuestionPerTasks]
-            dataLine.append(newline)
-        return dataLine
-
-    def convertToInt(data):
-        r = data
-        for x in range(0,len(data)):
-            for y in range(0,len(data[x])):
-                for z in range(0,len(data[x][y])):
-                    try:
-                        r[x][y][z] = int(r[x][y][z])
-                    except Exception as e:
-                        #e.with_traceback(None)
-                        continue
-        return r
-
-    result = []
-    for participant in rawData:
-        result.append(formatData(participant,0))
-    result = convertToInt(result)
-    return result
