@@ -7,16 +7,62 @@ numberOfInitialQuestions = 5
 numberOfQuestionPerTasks = 15
 datapointsPerParticipants = numberOfQuestionPerTasks * numberOfTasks + numberOfInitialQuestions;
 
-def Ttest():
-    #Data can be accesssed by using data[Participant][Task][Specific attribute]
-    data = getdata()
+def evaluate():
+    rawdata  = getAllDataFromResultFolder()
+    data = convertDataToMatrix(rawdata)     #Data can be accesssed by using data[Participant][Task][Specific attribute]
+    '''
+    print(data[0])
+    print(data[1])
+    print(data[2])
+    '''
+    variance = calculateVariance(data)
     return 0
 
+def calculateVariance(data):
+    result = []
+    """
+    print(data[1])
+    print(data[1][2])
+    print(len(data[1][1]))
+    
+    p = 1
+    t = 1
+    n = len(data[p][t])
+    s = sum(data[p][t])
+    print(data[p][t])
+    print(s)
+    print(s/n)
+    totalsumOfSquares = 0
+    for point in range(0, len(data[p][t])):
+        sumOfSquares = sumOfSquares + ((data[p][t][point] - (s/n)) ** 2)
 
-def getdata():
-    rawdata  = getAllDataFromResultFolder()
-    data = convertDataToMatrix(rawdata)
-    return data
+    variance = totalsumOfSquares / (n-1)
+    print(variance)
+    """
+    for question in range(1,15):
+        for task in range(1,2):
+            #calculate varience
+            n = len(data[1][1])
+            sumOfSquares = 0
+            average = sum(data[:][task][question]) / n
+            print(average)
+            #for participant in range(0,len(data)):
+
+            #sumOfSquares = (data[:][task][question]-average)**2
+            print(sumOfSquares)
+            result.append(sumOfSquares/(n-1))
+
+    """
+    print(result[0][0])
+    print(result[0][1])
+    print(result[1][0])
+    print(result[1][1])
+
+    print(len(result[0]))
+    print(len(result[1]))
+    """
+    return result
+
 def getAllDataFromResultFolder(seperator = ','):
     def isEmpty(lst):
         if lst:
@@ -51,24 +97,31 @@ def getDataFromFile(file, seperator = ','):
     #data = np.asarray(data)
     return data
 
+
+
 def convertDataToMatrix(rawData):
     def formatData(d,start):
         dataLine = [d[start:start + numberOfInitialQuestions]]
-        #"2019", "Son of god", "Right hand of god", "1"
-
-        #go through the data in steps of 15 to store each task datapoints as a new dimension
-        for step in range(0,len(rawData[1]),15):
-            dataLine.append(d[start + step + numberOfInitialQuestions : start + step + numberOfInitialQuestions + numberOfQuestionPerTasks])
-            #"1","2","3","4","5","6","3","6","5","4","2","4","5","2","1"
+        for step in range(0,numberOfTasks):
+            x = step * numberOfQuestionPerTasks
+            newline = d[start + x + numberOfInitialQuestions : start + x + numberOfInitialQuestions + numberOfQuestionPerTasks]
+            dataLine.append(newline)
         return dataLine
 
-    numberofParticipants = len(rawData[:]); dpPerPart = len(rawData[1])
-    print("numberofParticipants, dpPerPart  = [" + str(numberofParticipants)+","+str(dpPerPart) + "]")
-    if datapointsPerParticipants is not dpPerPart:
-        print("ERROR: The number of datapoints per participants does not match the expected number of datapoints.")
+    def convertToInt(data):
+        r = data
+        for x in range(0,len(data)):
+            for y in range(0,len(data[x])):
+                for z in range(0,len(data[x][y])):
+                    try:
+                        r[x][y][z] = int(r[x][y][z])
+                    except Exception as e:
+                        #e.with_traceback(None)
+                        continue
+        return r
 
     result = []
     for participant in rawData:
         result.append(formatData(participant,0))
-
+    result = convertToInt(result)
     return result
