@@ -54,13 +54,26 @@ def testEyeTrack():
             right_eye = frame[r_center[1]-int(r_width/2):r_center[1]+int(r_width/2), r_center[0]-int(r_width/2):r_center[0]+int(r_width/2)]
             left_eye = cv2.bitwise_and(left_eye, left_eye, mask=l_mask)
             right_eye = cv2.bitwise_and(right_eye, right_eye, mask=r_mask)
+            #Left edges
+            l_edges = cv2.cvtColor(left_eye, cv2.COLOR_BGR2GRAY)
+            r_edges = cv2.cvtColor(right_eye, cv2.COLOR_BGR2GRAY)
+            #l_edges = cv2.medianBlur(l_edges, 7)
+            #r_edges = cv2.medianBlur(r_edges, 7)
+            l_edges = cv2.equalizeHist(l_edges)
+            r_edges = cv2.equalizeHist(r_edges)
+            l_edges = cv2.GaussianBlur(l_edges,(7,7),0)
+            r_edges = cv2.GaussianBlur(r_edges,(7,7),0)
+            l_edges = auto_canny(l_edges)
+            r_edges = auto_canny(r_edges)
+
+            #Houghcircles
 
         #Show Images
         cv2.circle(frame, l_center, 1, (255,0,0),1)
         cv2.circle(frame, r_center, 1, (255,0,0),1)
         cv2.imshow("Image",frame)
-        cv2.imshow("left eye", left_eye)
-        cv2.imshow("left mask", right_eye)
+        cv2.imshow("left eye", l_edges)
+        cv2.imshow("left mask", r_edges)
         cv2.waitKey(1)
         if 0xFF == ord('q'):
             break
@@ -127,7 +140,7 @@ def bounding_box(points):
     x_coordinates, y_coordinates = zip(*points)
     return [(min(x_coordinates), min(y_coordinates)), (max(x_coordinates), max(y_coordinates))]
 
-def auto_canny(image, sigma=0.99):
+def auto_canny(image, sigma=0.30):
 	# compute the median of the single channel pixel intensities
 	v = np.median(image)
  
