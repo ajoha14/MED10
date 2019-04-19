@@ -10,7 +10,7 @@ import Signals.eyeSignal as eye
 
 def testEyeTrack():
     #Initialization
-    cap = cv2.VideoCapture("C:/Users/Anders S. Johansen/Desktop/im/vid.mp4")
+    cap = cv2.VideoCapture("C:/Users/Anders S. Johansen/Desktop/im/vid_Trim.mp4")
 
     pathToDetector = "Models/shape_predictor_68_face_landmarks.dat"
     detector = dlib.get_frontal_face_detector()
@@ -65,15 +65,34 @@ def testEyeTrack():
             r_edges = cv2.GaussianBlur(r_edges,(7,7),0)
             l_edges = auto_canny(l_edges)
             r_edges = auto_canny(r_edges)
-
             #Houghcircles
+            l_circ = cv2.HoughCircles(l_edges,cv2.HOUGH_GRADIENT,1,20,param1=30,param2=20,minRadius=0,maxRadius=0)
+            r_circ = cv2.HoughCircles(r_edges,cv2.HOUGH_GRADIENT,1,20,param1=30,param2=20,minRadius=0,maxRadius=0)
+            l_circ = np.uint16(np.around(l_circ))
+            r_circ = np.uint16(np.around(r_circ))
+            
+            #Draw left Circles
+            for i in l_circ[0,:]:
+                print(i)
+                # draw the outer circle
+                cv2.circle(left_eye,(i[0],i[1]),i[2],(0,255,0),2)
+                # draw the center of the circle
+                cv2.circle(left_eye,(i[0],i[1]),2,(0,0,255),3)
+            for i in r_circ[0,:]:
+                print(i)
+                # draw the outer circle
+                cv2.circle(right_eye,(i[0],i[1]),i[2],(0,255,0),2)
+                # draw the center of the circle
+                cv2.circle(right_eye,(i[0],i[1]),2,(0,0,255),3)
+
+
 
         #Show Images
         cv2.circle(frame, l_center, 1, (255,0,0),1)
         cv2.circle(frame, r_center, 1, (255,0,0),1)
-        cv2.imshow("Image",frame)
-        cv2.imshow("left eye", l_edges)
-        cv2.imshow("left mask", r_edges)
+        cv2.imshow("full frame",frame)
+        cv2.imshow("left eye", np.hstack((left_eye,cv2.cvtColor(l_edges,cv2.COLOR_GRAY2BGR))))
+        cv2.imshow("right eye", np.hstack((right_eye, cv2.cvtColor(r_edges,cv2.COLOR_GRAY2BGR))))
         cv2.waitKey(1)
         if 0xFF == ord('q'):
             break
