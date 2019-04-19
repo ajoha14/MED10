@@ -63,27 +63,41 @@ def testEyeTrack():
             r_edges = cv2.equalizeHist(r_edges)
             l_edges = cv2.GaussianBlur(l_edges,(7,7),0)
             r_edges = cv2.GaussianBlur(r_edges,(7,7),0)
-            l_edges = auto_canny(l_edges)
-            r_edges = auto_canny(r_edges)
+            l_edges = cv2.adaptiveThreshold(l_edges,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY_INV,13,1)
+            r_edges = cv2.adaptiveThreshold(r_edges,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY_INV,13,1)
+            #Crop away eye lid edges
+            l_edges = cv2.bitwise_and(l_edges, l_edges, mask=l_mask)
+            r_edges = cv2.bitwise_and(r_edges, r_edges, mask=r_mask)
+            #Hit and fit
+            kernel = np.ones((2,2),np.uint8)
+            l_edges = cv2.erode(l_edges, kernel, iterations=1)
+            r_edges = cv2.erode(r_edges, kernel, iterations=1)
+            l_edges = cv2.dilate(l_edges, kernel, iterations=1)
+            r_edges = cv2.dilate(r_edges, kernel, iterations=1)
+            
             #Houghcircles
-            l_circ = cv2.HoughCircles(l_edges,cv2.HOUGH_GRADIENT,1,20,param1=30,param2=20,minRadius=0,maxRadius=0)
-            r_circ = cv2.HoughCircles(r_edges,cv2.HOUGH_GRADIENT,1,20,param1=30,param2=20,minRadius=0,maxRadius=0)
+            l_circ = cv2.HoughCircles(l_edges,cv2.HOUGH_GRADIENT,2,5,param1=30,param2=25,minRadius=0,maxRadius=int(l_width/3))
+            r_circ = cv2.HoughCircles(r_edges,cv2.HOUGH_GRADIENT,2,5,param1=30,param2=25,minRadius=0,maxRadius=int(r_width/3))
             l_circ = np.uint16(np.around(l_circ))
             r_circ = np.uint16(np.around(r_circ))
-            
+
+            i_l = l_circ[0,0]
+            r_l = l_circ[0,0]
+            cv2.circle(left_eye,(i_l[0],i_l[1]),2,(0,255,0),2)
+
             #Draw left Circles
-            for i in l_circ[0,:]:
-                print(i)
-                # draw the outer circle
-                cv2.circle(left_eye,(i[0],i[1]),i[2],(0,255,0),2)
+            #for i in l_circ[0,:]:
+                #print(i)
+                #draw the outer circle
+                #cv2.circle(left_eye,(i[0],i[1]),i[2],(0,255,0),2)
                 # draw the center of the circle
-                cv2.circle(left_eye,(i[0],i[1]),2,(0,0,255),3)
-            for i in r_circ[0,:]:
-                print(i)
+                #cv2.circle(left_eye,(i[0],i[1]),2,(0,0,255),3)
+            #for i in r_circ[0,:]:
+                #print(i)
                 # draw the outer circle
-                cv2.circle(right_eye,(i[0],i[1]),i[2],(0,255,0),2)
+                #cv2.circle(right_eye,(i[0],i[1]),i[2],(0,255,0),2)
                 # draw the center of the circle
-                cv2.circle(right_eye,(i[0],i[1]),2,(0,0,255),3)
+                #cv2.circle(right_eye,(i[0],i[1]),2,(0,0,255),3)
 
 
 
@@ -115,11 +129,11 @@ def testhr():
     for i in range(1,len(data)):
         hrbuffer.add(float(data[i].split(',',3)[2]))
         tsbuffer.add(data[i].split(',',3)[0])
-        if len(hrbuffer.data) == hrbuffer.size:       
+        if len(hrbuffer.data) == hrbuffer.size:
             #Do calculations
             hrdat = np.asarray(qm.moving_average(hrbuffer.data,window=10))
             tsdat = np.asarray(tsbuffer.data)
-            l = qm.ampd(hrdat,limit=0.5) #Peak Detectoin  
+            l = qm.ampd(hrdat,limit=0.5) #Peak Detectoin
             hrs = c.HR(hrdat,tsdat)
             #plot Data
             disppeaks = []
@@ -129,7 +143,7 @@ def testhr():
             ax.clear()
             ax.set_title("HeartRate: {} ({} Samples)".format(hrs,len(disppeaks)))
             plt.plot(hrbuffer.data)
-            plt.plot(hrdat)        
+            plt.plot(hrdat)
             plt.scatter(l,disppeaks,c='r')
             plt.show()
             plt.pause(0.01)
@@ -162,12 +176,12 @@ def bounding_box(points):
 def auto_canny(image, sigma=0.30):
 	# compute the median of the single channel pixel intensities
 	v = np.median(image)
- 
+
 	# apply automatic Canny edge detection using the computed median
 	lower = int(max(0, (1.0 - sigma) * v))
 	upper = int(min(255, (1.0 + sigma) * v))
 	edged = cv2.Canny(image, lower, upper)
- 
+
 	# return the edged image
 	return edged
 
@@ -177,9 +191,9 @@ def iris_segment(image):
     #Convert image to greyscale
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-    
+
 
     return image
-    
+
 
 testEyeTrack()
