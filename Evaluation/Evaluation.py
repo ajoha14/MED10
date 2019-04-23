@@ -11,13 +11,9 @@ def evaluate():
     rawdata  = getAllDataFromResultFolder()
     #participantMatrix = convertDataToParticipantMatrix(rawdata)     #Data can be accesssed by using data[Participant][Task][Specific attribute]
     taskMatrix = convertToTaskMatrix(rawdata)
-    printData(taskMatrix)
-    '''
-    print(data[0])
-    print(data[1])
-    print(data[2])
-    '''
-    #variance = calculateVariance(data)
+
+    variance = calculateVariance(taskMatrix)
+    printData(variance)
     return 0
 
 def calculateVariance(data):
@@ -25,31 +21,24 @@ def calculateVariance(data):
         sumOfSquares = 0
         n = len(d)
         s = sum(d)
-        for point in range(0, len(d)):
-            sumOfSquares = sumOfSquares + ((d[point] - (s / n)) ** 2)
+        for point in d:
+            sumOfSquares = sumOfSquares + ((point - (s / n)) ** 2)
         v = sumOfSquares / (n - 1)
         return v
 
 
     result = []
-    #printData(data)
-    print(data[:])
-    #for task in range(1,numberOfTasks+1):
-        #result.append([])
-        #for question in range(0, numberOfQuestionPerTasks):
-            #calculate varience
+    for row in data:
+        result.append([row,variance(row)])
 
-            #result[task-1].append(variance(data[])))
     return result
 
 def convertToTaskMatrix(d):
     result = []
-    for participant in range(1,len(d)):
-        #for task in range(0,numberOfTasks):
+    for point in range(numberOfInitialQuestions, numberOfInitialQuestions + numberOfQuestionPerTasks):
         temp = []
-        for point in range(numberOfInitialQuestions, numberOfInitialQuestions + numberOfQuestionPerTasks):
+        for participant in range(1, len(d)):
             temp.append(d[participant][point])
-            #print(task,point)
         result.append(temp)
     return result
 
@@ -68,8 +57,8 @@ def convertDataToParticipantMatrix(rawData):
     return result
 
 def printData(data):
-    for d in data:
-        print(d)
+    for row in data:
+        print(row)
 
 def getAllDataFromResultFolder(seperator = ','):
     def convertToNumber(string):
