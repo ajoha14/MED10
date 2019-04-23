@@ -10,16 +10,16 @@ import Signals.eyeSignal as eye
 
 def testEyeTrack():
     #Initialization
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture("C:/Users/Anders S. Johansen/Desktop/im/vid_Trim.mp4")
 
     pathToDetector = "Models/shape_predictor_68_face_landmarks.dat"
     detector = dlib.get_frontal_face_detector()
     predictor = dlib.shape_predictor(pathToDetector)
 
     #Run
-    while(True):
+    while(cap.isOpened()):
         ret, frame = cap.read()
-        frame = cv2.imread("C:/Users/Anders S. Johansen/Desktop/im/3.jpg")
+        #frame = cv2.imread("C:/Users/Anders S. Johansen/Desktop/im/5.jpg")
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         rects = detector(gray,1)
 
@@ -27,8 +27,10 @@ def testEyeTrack():
             #Get facial landmark points
             shape = predictor(gray, rect)
             shape = shape_to_np(shape) #36-41(left eye), 42-47(right eye)
-            lbb = bounding_box(shape[36:42])
-            rbb = bounding_box(shape[42:48])
+            l_eye_p = shape[36:42]
+            r_eye_p = shape[42:48]
+            lbb = bounding_box(l_eye_p)
+            rbb = bounding_box(r_eye_p)
             #Calculate bounding box width & Height
             l_width = lbb[1][0] - lbb[0][0]
             r_width = rbb[1][0] - rbb[0][0]
@@ -40,54 +42,74 @@ def testEyeTrack():
             #Cropout eye
             l_eye = gray[l_center[1]-int(l_width/2):l_center[1]+int(l_width/2), l_center[0]-int(l_width/2):l_center[0]+int(l_width/2)]
             r_eye = gray[r_center[1]-int(r_width/2):r_center[1]+int(r_width/2), r_center[0]-int(r_width/2):r_center[0]+int(r_width/2)]
-            #Median Filter
-            l_eye = cv2.medianBlur(l_eye, 11)
-            r_eye = cv2.medianBlur(r_eye, 11)
-            #Histogram equalization
-            l_eye = cv2.equalizeHist(l_eye)
-            r_eye = cv2.equalizeHist(r_eye)
-            #thresholding
-            l_edges = auto_canny(l_eye)
-            r_edges = auto_canny(r_eye)
-            l_circles = cv2.HoughCircles(l_edges,cv2.HOUGH_GRADIENT,1,int(l_width/2),param1=50,param2=30,minRadius=0,maxRadius=0)
-            r_circles = cv2.HoughCircles(r_edges,cv2.HOUGH_GRADIENT,1,int(l_width/2),param1=50,param2=30,minRadius=0,maxRadius=0)
             #Create Mask
-            l_mask = np.zeros(l_eye.shape)
-            r_mask = np.zeros(r_eye.shape)
-            if l_circles is not None:
-                l_circles = np.uint16(np.around(l_circles))
-                for i in l_circles[0,:]:
-                    # draw the outer circle
-                    cv2.circle(l_mask,(i[0],i[1]),i[2],(255,255,255),-1)
-            if r_circles is not None:
-                r_circles = np.uint16(np.around(r_circles))
-                for i in r_circles[0,:]:
-                    # draw the outer circle
-                    cv2.circle(r_mask,(i[0],i[1]),i[2],(255,255,255),-1)
-        
-
+            im_mask = np.zeros(frame.shape, dtype=np.uint8)
+            im_mask = cv2.fillPoly(im_mask, [l_eye_p],(255,255,255))
+            im_mask = cv2.fillPoly(im_mask, [r_eye_p],(255,255,255))
+            im_mask = cv2.cvtColor(im_mask, cv2.COLOR_BGR2GRAY)
+            l_mask = im_mask[l_center[1]-int(l_width/2):l_center[1]+int(l_width/2), l_center[0]-int(l_width/2):l_center[0]+int(l_width/2)]
+            r_mask = im_mask[r_center[1]-int(r_width/2):r_center[1]+int(r_width/2), r_center[0]-int(r_width/2):r_center[0]+int(r_width/2)]
             #Apply Mask
             left_eye = frame[l_center[1]-int(l_width/2):l_center[1]+int(l_width/2), l_center[0]-int(l_width/2):l_center[0]+int(l_width/2)]
             right_eye = frame[r_center[1]-int(r_width/2):r_center[1]+int(r_width/2), r_center[0]-int(r_width/2):r_center[0]+int(r_width/2)]
+            left_eye = cv2.bitwise_and(left_eye, left_eye, mask=l_mask)
+            right_eye = cv2.bitwise_and(right_eye, right_eye, mask=r_mask)
+            #Left edges
+            l_edges = cv2.cvtColor(left_eye, cv2.COLOR_BGR2GRAY)
+            r_edges = cv2.cvtColor(right_eye, cv2.COLOR_BGR2GRAY)
+            #l_edges = cv2.medianBlur(l_edges, 7)
+            #r_edges = cv2.medianBlur(r_edges, 7)
+            l_edges = cv2.equalizeHist(l_edges)
+            r_edges = cv2.equalizeHist(r_edges)
+            l_edges = cv2.GaussianBlur(l_edges,(7,7),0)
+            r_edges = cv2.GaussianBlur(r_edges,(7,7),0)
+            l_edges = cv2.adaptiveThreshold(l_edges,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY_INV,13,1)
+            r_edges = cv2.adaptiveThreshold(r_edges,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,cv2.THRESH_BINARY_INV,13,1)
+            #Crop away eye lid edges
+            l_edges = cv2.bitwise_and(l_edges, l_edges, mask=l_mask)
+            r_edges = cv2.bitwise_and(r_edges, r_edges, mask=r_mask)
+            #Hit and fit
+            kernel = np.ones((2,2),np.uint8)
+            l_edges = cv2.erode(l_edges, kernel, iterations=1)
+            r_edges = cv2.erode(r_edges, kernel, iterations=1)
+            l_edges = cv2.dilate(l_edges, kernel, iterations=1)
+            r_edges = cv2.dilate(r_edges, kernel, iterations=1)
             
-            left_eye = cv2.bitwise_and(left_eye, left_eye, l_mask)
-            right_eye = cv2.bitwise_and(right_eye, right_eye, r_mask)
+            #Houghcircles
+            l_circ = cv2.HoughCircles(l_edges,cv2.HOUGH_GRADIENT,2,5,param1=30,param2=25,minRadius=0,maxRadius=int(l_width/3))
+            r_circ = cv2.HoughCircles(r_edges,cv2.HOUGH_GRADIENT,2,5,param1=30,param2=25,minRadius=0,maxRadius=int(r_width/3))
+            l_circ = np.uint16(np.around(l_circ))
+            r_circ = np.uint16(np.around(r_circ))
+
+            i_l = l_circ[0,0]
+            r_l = l_circ[0,0]
+            cv2.circle(left_eye,(i_l[0],i_l[1]),2,(0,255,0),2)
+
+            #Draw left Circles
+            #for i in l_circ[0,:]:
+                #print(i)
+                #draw the outer circle
+                #cv2.circle(left_eye,(i[0],i[1]),i[2],(0,255,0),2)
+                # draw the center of the circle
+                #cv2.circle(left_eye,(i[0],i[1]),2,(0,0,255),3)
+            #for i in r_circ[0,:]:
+                #print(i)
+                # draw the outer circle
+                #cv2.circle(right_eye,(i[0],i[1]),i[2],(0,255,0),2)
+                # draw the center of the circle
+                #cv2.circle(right_eye,(i[0],i[1]),2,(0,0,255),3)
 
 
-            #Show Images
-            if l_eye.shape[0] > 0 and l_eye.shape[1] > 0 and r_eye.shape[0] > 0 and r_eye.shape[1]:
-                for p in shape[36:42]:
-                    cv2.circle(frame, (p[0],p[1]), 1, (0,0,255),1)
-                for p in shape[42:48]:
-                    cv2.circle(frame, (p[0],p[1]), 1, (0,0,255),1)
-                cv2.circle(frame, l_center, 1, (255,0,0),1)
-                cv2.circle(frame, r_center, 1, (255,0,0),1)
-                cv2.imshow("Image",frame)
-                cv2.imshow("left eye", left_mask)
-                cv2.imshow("right eye", right_mask)
-                if cv2.waitKey(1) & 0xFF == ord('q'):
-                    break
-        cv2.waitKey(2000)
+
+        #Show Images
+        cv2.circle(frame, l_center, 1, (255,0,0),1)
+        cv2.circle(frame, r_center, 1, (255,0,0),1)
+        cv2.imshow("full frame",frame)
+        cv2.imshow("left eye", np.hstack((left_eye,cv2.cvtColor(l_edges,cv2.COLOR_GRAY2BGR))))
+        cv2.imshow("right eye", np.hstack((right_eye, cv2.cvtColor(r_edges,cv2.COLOR_GRAY2BGR))))
+        cv2.waitKey(1)
+        if 0xFF == ord('q'):
+            break
     #Cleanup
     cap.release()
     cv2.destroyAllWindows()
@@ -107,11 +129,11 @@ def testhr():
     for i in range(1,len(data)):
         hrbuffer.add(float(data[i].split(',',3)[2]))
         tsbuffer.add(data[i].split(',',3)[0])
-        if len(hrbuffer.data) == hrbuffer.size:       
+        if len(hrbuffer.data) == hrbuffer.size:
             #Do calculations
             hrdat = np.asarray(qm.moving_average(hrbuffer.data,window=10))
             tsdat = np.asarray(tsbuffer.data)
-            l = qm.ampd(hrdat,limit=0.5) #Peak Detectoin  
+            l = qm.ampd(hrdat,limit=0.5) #Peak Detectoin
             hrs = c.HR(hrdat,tsdat)
             #plot Data
             disppeaks = []
@@ -121,7 +143,7 @@ def testhr():
             ax.clear()
             ax.set_title("HeartRate: {} ({} Samples)".format(hrs,len(disppeaks)))
             plt.plot(hrbuffer.data)
-            plt.plot(hrdat)        
+            plt.plot(hrdat)
             plt.scatter(l,disppeaks,c='r')
             plt.show()
             plt.pause(0.01)
@@ -151,15 +173,15 @@ def bounding_box(points):
     x_coordinates, y_coordinates = zip(*points)
     return [(min(x_coordinates), min(y_coordinates)), (max(x_coordinates), max(y_coordinates))]
 
-def auto_canny(image, sigma=0.99):
+def auto_canny(image, sigma=0.30):
 	# compute the median of the single channel pixel intensities
 	v = np.median(image)
- 
+
 	# apply automatic Canny edge detection using the computed median
 	lower = int(max(0, (1.0 - sigma) * v))
 	upper = int(min(255, (1.0 + sigma) * v))
 	edged = cv2.Canny(image, lower, upper)
- 
+
 	# return the edged image
 	return edged
 
@@ -169,9 +191,9 @@ def iris_segment(image):
     #Convert image to greyscale
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-    
+
 
     return image
-    
+
 
 testEyeTrack()
