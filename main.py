@@ -74,13 +74,12 @@ class Worker:
                     gsr, hr = float(gsr), float(hr)
                     if baseline:
                         gsrbuffer.add(gsr)
-                        #print(gsrbuffer.data)
                     if gsrbuffer.isFull():
                         baseline = False
-                        if first:
+                        if not first:
                             first = True
                             print("Baseline established!")
-                        log.logString(currentData)
+                    log.logString(currentData)
 
     def AnalyseTestData(self):
         print("Arduino not plugged in. Loading data from log instead")
