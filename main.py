@@ -11,6 +11,7 @@ import Evaluation.Evaluation as Eval
 import misc.QuickMaths as math
 import matplotlib.pyplot as plt
 import keyboard
+import threading
 
 #Initialization - Arguments
 parser = argparse.ArgumentParser(description="Multi Modal Affect Detection")
@@ -49,11 +50,23 @@ class latinSquare:
         misc.saveToFile("Evaluation/latinSquare.txt", self.square)
 
 
+
 class Worker:
     looping = True
 
+
     def __init__(self):
+        self.gsrbuffer = Buffer(1200)
+        self.hrbuffer = Buffer(1200)
+
         print("worker started")
+
+    def plotstuff(self):
+        plt.figure(1)
+        while True:
+            plt.plot(self.gsrbuffer.data)
+            plt.plot(self.hrbuffer.data)
+
     def RecordData(self):
         ls = latinSquare()
         for x in ls.square:
@@ -62,24 +75,31 @@ class Worker:
         serialport = SerialReader(port='COM5')
         keyboard.add_hotkey('space', self.toogleLoop, args=())
         first = False
-        baseline = True
         if serialport.ser is not None:
             log = Logger()
-            gsrbuffer = Buffer(1200)
+            #threadplot = threading.Thread(target=self.plotstuff(), args=())
+            #threadplot.start()
             print("Establishing baseline...")
             while self.looping:
                 currentData = serialport.current_data()
                 if currentData is not 'error':
                     time, gsr, hr = currentData.split(',', 3)
                     gsr, hr = float(gsr), float(hr)
-                    if baseline:
-                        gsrbuffer.add(gsr)
-                    if gsrbuffer.isFull():
-                        baseline = False
+                    self.gsrbuffer.add(gsr)
+                    self.hrbuffer.add(hr)
+                    if self.gsrbuffer.isFull():
                         if not first:
                             first = True
                             print("Baseline established!")
                     log.logString(currentData)
+
+    def plotstuff(self):
+        while True:
+            plt.figure(1)
+            plt.plot(self.gsrbuffer.data)
+            #plt.plot(self.hrbuffer.data)
+            plt.show()
+            plt.pause(0.05)
 
     def AnalyseTestData(self):
         print("Arduino not plugged in. Loading data from log instead")
