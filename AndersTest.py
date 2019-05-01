@@ -109,9 +109,9 @@ def segmentEye(points, image, min_size=10):
         return 0.0
     circles = np.uint16(np.around(circles))
     best_circle = circles[0,0]
-    #Iris Location is at the center
-    print(best_circle)
-    print(roi.shape, blob.shape)
+    pupil_ratio(roi, best_circle)
+    
+    #Iris Location is at the cente
     #Debug
     print("eye found")
     #cv2.circle(roi, (best_circle[0],best_circle[1]), 2, (255,255,255), 2)
@@ -155,10 +155,9 @@ def auto_canny(image, sigma=0.30):
 	# return the edged image
 	return edged
 
-def pupil_ratio(image):
-    x_gradient = image[:][best_circle[0]]
-    y_gradient = image[best_circle[1]][:]
-    print(x_gradient)
-    print(y_gradient)
+def pupil_ratio(image, pupil_cord):
+    gradient_y = image[:, pupil_cord[0]]
+    gradient_x = image[pupil_cord[1], :]
+    print(np.gradient(y_gradient))
 
 testEyeTrack()
