@@ -1,7 +1,8 @@
 import argparse
+from misc import misc
+import csv
 import numpy as np
 from numpy.distutils.system_info import f2py_info
-
 from Signals.ArduinoSerialPortCommunicator import SerialReader
 from misc.logging import Logger
 import misc.logging as logging
@@ -10,6 +11,7 @@ import Evaluation.Evaluation as Eval
 import misc.QuickMaths as math
 import matplotlib.pyplot as plt
 import keyboard
+import threading
 
 #Initialization - Arguments
 parser = argparse.ArgumentParser(description="Multi Modal Affect Detection")
@@ -26,31 +28,79 @@ def __main__():
     if args.debug:
         print("RUNNING IN DEBUG MODE")
     worker = Worker()
-    worker.evaluate()
+    worker.RecordData()
+    #worker.evaluate()
+
+
+class latinSquare:
+    d = misc.getDataFromFile("Evaluation/latinSquare.txt")
+    water = d[0]
+    lego = d[1]
+    square = []
+
+    def __init__(self):
+        self.square.append(self.water.copy())
+        temp = self.square[0].pop(0)
+        self.square[0].append(temp)
+        self.square.append(self.lego.copy())
+        temp = self.square[1].pop(0)
+        self.square[1].append(temp)
+
+    def SaveState(self):
+        misc.saveToFile("Evaluation/latinSquare.txt", self.square)
+
 
 
 class Worker:
     looping = True
 
-    def __init__(self):
-        print("worker started")
-    def RecordData(self):
-        serialport = SerialReader(port='COM5')
 
+    def __init__(self):
+        self.gsrbuffer = Buffer(1200)
+        self.hrbuffer = Buffer(1200)
+
+        print("worker started")
+
+    def plotstuff(self):
+        plt.figure(1)
+        while True:
+            plt.plot(self.gsrbuffer.data)
+            plt.plot(self.hrbuffer.data)
+
+    def RecordData(self):
+        ls = latinSquare()
+        for x in ls.square:
+            print(x)
+        ls.SaveState()
+        serialport = SerialReader(port='COM5')
         keyboard.add_hotkey('space', self.toogleLoop, args=())
+        first = False
         if serialport.ser is not None:
             log = Logger()
-            gsrbuffer = Buffer(10000)
+            #threadplot = threading.Thread(target=self.plotstuff(), args=())
+            #threadplot.start()
+            print("Establishing baseline...")
             while self.looping:
                 currentData = serialport.current_data()
                 if currentData is not 'error':
+                    time, gsr, hr = currentData.split(',', 3)
+                    gsr, hr = float(gsr), float(hr)
+                    self.gsrbuffer.add(gsr)
+                    self.hrbuffer.add(hr)
+                    if self.gsrbuffer.isFull():
+                        if not first:
+                            first = True
+                            print("Baseline established!")
                     log.logString(currentData)
-                """    time, gsr, hr = currentData.split(',', 3)
-                    gsr, hr = int(gsr), int(hr)
-                    gsrbuffer.add(gsr)
-                    #print(gsrbuffer.data)
-                if gsrbuffer.isFull():
-                    break"""
+
+    def plotstuff(self):
+        while True:
+            plt.figure(1)
+            plt.plot(self.gsrbuffer.data)
+            #plt.plot(self.hrbuffer.data)
+            plt.show()
+            plt.pause(0.05)
+
     def AnalyseTestData(self):
         print("Arduino not plugged in. Loading data from log instead")
         gsrList = logging.getGSRFromLog("Logs/03_27-09_04_33.csv")
@@ -77,5 +127,4 @@ class Worker:
         #print("Ttest result = ")
         #print(p)
 __main__()
-
 

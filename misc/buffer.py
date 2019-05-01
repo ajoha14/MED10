@@ -5,7 +5,7 @@ class Buffer:
 
     def add(self, newData):
         if self.isFull():
-            self.data = self.data[1:]
+            self.data.pop(0)# = self.data[1:]
             self.data.append(newData)
         else:
             self.data.append(newData)
