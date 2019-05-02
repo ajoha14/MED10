@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import imutils, dlib
 
-import cv2
+import opencv as cv2
 import Signals.eyeSignal as eye
 
 def testEyeTrack():
@@ -35,7 +35,7 @@ def testEyeTrack():
     cv2.destroyAllWindows()
 
 def testhr():
-    with open("Logs/03_27-09_04_33.csv") as f:
+    with open("Logs/05_02-12_26_33.csv") as f:
         data = np.array(f.read().splitlines())
 
     c = hrProcesser()

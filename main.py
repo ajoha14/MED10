@@ -11,13 +11,12 @@ import Evaluation.Evaluation as Eval
 import misc.QuickMaths as math
 import matplotlib.pyplot as plt
 import keyboard
-import threading
+from AndersTest import testhr
 
 #Initialization - Arguments
 parser = argparse.ArgumentParser(description="Multi Modal Affect Detection")
 parser.add_argument("-debug", default=False, action="store_true", help="Enables debug mode")
 args = parser.parse_args()
-
 
 #Testing Area
 def testing():
@@ -28,9 +27,8 @@ def __main__():
     if args.debug:
         print("RUNNING IN DEBUG MODE")
     worker = Worker()
-    worker.RecordData()
+    #worker.RecordData()
     #worker.evaluate()
-
 
 class latinSquare:
     d = misc.getDataFromFile("Evaluation/latinSquare.txt")
@@ -49,17 +47,13 @@ class latinSquare:
     def SaveState(self):
         misc.saveToFile("Evaluation/latinSquare.txt", self.square)
 
-
-
 class Worker:
     looping = True
-
-
     def __init__(self):
         self.gsrbuffer = Buffer(1200)
         self.hrbuffer = Buffer(1200)
         self.log = Logger()
-
+        testhr()
         print("worker started")
 
     def plotstuff(self):
