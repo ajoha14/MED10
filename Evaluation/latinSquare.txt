@@ -1,2 +1,2 @@
-water_Give_Slow,water_Take_Fast,water_Take_Slow,water_Give_Fast
-Lego_Infront_Slow,Lego_Behind_Fast,Lego_Behind_Slow,Lego_Infront_Fast
+water_Take_Slow,water_Give_Fast,water_Give_Slow,water_Take_Fast
+Lego_Behind_Slow,Lego_Infront_Fast,Lego_Infront_Slow,Lego_Behind_Fast

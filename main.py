@@ -58,6 +58,7 @@ class Worker:
     def __init__(self):
         self.gsrbuffer = Buffer(1200)
         self.hrbuffer = Buffer(1200)
+        self.log = Logger()
 
         print("worker started")
 
@@ -76,22 +77,24 @@ class Worker:
         keyboard.add_hotkey('space', self.toogleLoop, args=())
         first = False
         if serialport.ser is not None:
-            log = Logger()
             #threadplot = threading.Thread(target=self.plotstuff(), args=())
             #threadplot.start()
             print("Establishing baseline...")
             while self.looping:
                 currentData = serialport.current_data()
                 if currentData is not 'error':
-                    time, gsr, hr = currentData.split(',', 3)
-                    gsr, hr = float(gsr), float(hr)
-                    self.gsrbuffer.add(gsr)
-                    self.hrbuffer.add(hr)
-                    if self.gsrbuffer.isFull():
-                        if not first:
-                            first = True
-                            print("Baseline established!")
-                    log.logString(currentData)
+                    try:
+                        time, gsr, hr = currentData.split(',', 3)
+                        gsr, hr = float(gsr), float(hr)
+                        self.gsrbuffer.add(gsr)
+                        self.hrbuffer.add(hr)
+                        if self.gsrbuffer.isFull():
+                            if not first:
+                                first = True
+                                print("Baseline established!")
+                        self.log.logString(currentData)
+                    except:
+                        self.log.logString(currentData)
 
     def plotstuff(self):
         while True:
@@ -119,8 +122,9 @@ class Worker:
         plt.show()
 
     def toogleLoop(self):
-        print("Toogling Loop...")
-        self.looping = not self.looping
+        print("Making data key point")
+        #self.looping = not self.looping
+        self.log.logString("TEST KEY FRAME")
 
     def evaluate(self):
         p = Eval.evaluate()
