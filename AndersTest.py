@@ -10,16 +10,20 @@ import Signals.eyeSignal as eye
 
 def testEyeTrack():
     #Initialization
-    cap = cv2.VideoCapture("C:/Users/Anders S. Johansen/Desktop/im/vid_Trim.mp4")
+    #cap = cv2.VideoCapture("C:/Users/Anders S. Johansen/Desktop/test.mp4")
 
     pathToDetector = "Models/shape_predictor_68_face_landmarks.dat"
     detector = dlib.get_frontal_face_detector()
     predictor = dlib.shape_predictor(pathToDetector)
+    
 
     #Run
-    while(cap.isOpened()):
-        ret, frame = cap.read()
-        #frame = cv2.imread("C:/Users/Anders S. Johansen/Desktop/im/5.jpg")
+    while(True): #cap.isOpened()
+        #ret, frame = cap.read()
+        #cv2.imshow("input", cv2.resize(frame,None, fx=0.2, fy=0.2))
+        #cv2.waitKey(10)
+        #print(frame.shape)
+        frame = cv2.imread("C:/Users/Anders S. Johansen/Desktop/im1.jpg")
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         rects = detector(gray,1)
 
@@ -29,6 +33,12 @@ def testEyeTrack():
             shape = shape_to_np(shape) #36-41(left eye), 42-47(right eye)
             l_eye_p = shape[36:42]
             r_eye_p = shape[42:48]
+            
+            #f2 = frame
+            #for p in shape:
+            #    cv2.circle(f2, (p[0], p[1]), 2, (255,0,0), 2)
+            #cv2.imwrite("C:/Users/Anders S. Johansen/Desktop/im1-1.jpg", f2)
+
             segmentEye(l_eye_p, frame)
     #Cleanup
     cap.release()
@@ -89,9 +99,10 @@ def segmentEye(points, image, min_size=10):
     roi = gray[bb[0][1]:bb[1][1], bb[0][0]:bb[1][0]]
     #Histogram equalizatoin (improve contrast)
     blob = cv2.equalizeHist(roi)
+    #cv2.imwrite("C:/Users/Anders S. Johansen/Desktop/im1-2.jpg", roi)
     #Blur (to remove noise)
     blob = cv2.medianBlur(blob,5)
-    blob = cv2.GaussianBlur(blob, (3,3), 0)
+    blob = cv2.GaussianBlur(blob, (5,5), 0)
     #Adaptive Threshold / gradient edge detection
     blob = cv2.adaptiveThreshold(blob,255,cv2.ADAPTIVE_THRESH_MEAN_C,cv2.THRESH_BINARY_INV,5,1)
     #Remove Eyelid gradient
@@ -101,6 +112,7 @@ def segmentEye(points, image, min_size=10):
     kernel = np.ones((3,3),np.uint8)
     blob = cv2.erode(blob, kernel, iterations=1)
     #blob = cv2.dilate(blob, kernel, iterations=2)
+    #cv2.imwrite("C:/Users/Anders S. Johansen/Desktop/im1-3.jpg", blob)
     #Hough Circles
     circles = cv2.HoughCircles(blob, cv2.HOUGH_GRADIENT, 2, 5, param1=45, param2=20, minRadius=int(width/8), maxRadius=int(width/2))
     #Ignore if no iris detected
@@ -114,8 +126,11 @@ def segmentEye(points, image, min_size=10):
     #Iris Location is at the cente
     #Debug
     print("eye found")
-    #cv2.circle(roi, (best_circle[0],best_circle[1]), 2, (255,255,255), 2)
-    cv2.circle(roi, (best_circle[0],best_circle[1]), best_circle[2], (255,255,255), 2)
+    f3 = cv2.equalizeHist(gray[bb[0][1]:bb[1][1], bb[0][0]:bb[1][0]])
+    cv2.imwrite("C:/Users/Anders S. Johansen/Desktop/im1-5.jpg",f3)
+    cv2.circle(f3, (best_circle[0],best_circle[1]), 0, (255,0,0), 2)
+    cv2.circle(f3, (best_circle[0],best_circle[1]), best_circle[2], (255,0,0), 1)
+    cv2.imwrite("C:/Users/Anders S. Johansen/Desktop/im1-4.jpg",f3)
     cv2.imshow("eye", np.hstack((roi,blob)))
     cv2.waitKey(1)
 
@@ -156,8 +171,12 @@ def auto_canny(image, sigma=0.30):
 	return edged
 
 def pupil_ratio(image, pupil_cord):
-    gradient_y = image[:, pupil_cord[0]]
     gradient_x = image[pupil_cord[1], :]
-    print(np.gradient(y_gradient))
+    gradient_x = np.gradient(gradient_x)
+    fout = open("C:/Users/Anders S. Johansen/Desktop/sig.txt","w")
+    for l in gradient_x:
+        fout.write(str(l)+"\n")
+    fout.close()
 
-testEyeTrack()
+
+#testEyeTrack()
