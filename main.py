@@ -11,7 +11,6 @@ import Evaluation.Evaluation as Eval
 import misc.QuickMaths as math
 import matplotlib.pyplot as plt
 import keyboard
-from AndersTest import testhr
 
 #Initialization - Arguments
 parser = argparse.ArgumentParser(description="Multi Modal Affect Detection")
@@ -27,7 +26,8 @@ def __main__():
     if args.debug:
         print("RUNNING IN DEBUG MODE")
     worker = Worker()
-    #worker.RecordData()
+    #worker.EstablishBaseline()
+    worker.RecordData()
     #worker.evaluate()
 
 class latinSquare:
@@ -53,7 +53,11 @@ class Worker:
         self.gsrbuffer = Buffer(1200)
         self.hrbuffer = Buffer(1200)
         self.log = Logger()
-        testhr()
+        """ls = latinSquare()
+        for x in ls.square:
+            print(x)
+        ls.SaveState()"""
+
         print("worker started")
 
     def plotstuff(self):
@@ -62,17 +66,11 @@ class Worker:
             plt.plot(self.gsrbuffer.data)
             plt.plot(self.hrbuffer.data)
 
-    def RecordData(self):
-        ls = latinSquare()
-        for x in ls.square:
-            print(x)
-        ls.SaveState()
+    def EstablishBaseline(self):
         serialport = SerialReader(port='COM5')
         keyboard.add_hotkey('space', self.toogleLoop, args=())
         first = False
         if serialport.ser is not None:
-            #threadplot = threading.Thread(target=self.plotstuff(), args=())
-            #threadplot.start()
             print("Establishing baseline...")
             while self.looping:
                 currentData = serialport.current_data()
@@ -86,6 +84,19 @@ class Worker:
                             if not first:
                                 first = True
                                 print("Baseline established!")
+                                break
+                        self.log.logString(currentData)
+                    except:
+                        self.log.logString(currentData)
+
+    def RecordData(self):
+        serialport = SerialReader(port='COM5')
+        keyboard.add_hotkey('space', self.toogleLoop, args=())
+        if serialport.ser is not None:
+            while self.looping:
+                currentData = serialport.current_data()
+                if currentData is not 'error':
+                    try:
                         self.log.logString(currentData)
                     except:
                         self.log.logString(currentData)
