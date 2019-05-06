@@ -134,6 +134,7 @@ class Worker:
     def evaluate(self):
         p = Eval.evaluate()
         #print("Ttest result = ")
-        #print(p)
+        print(p)
+
 __main__()
 
