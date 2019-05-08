@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import imutils, dlib
 
-import opencv as cv2
+import cv2
 import Signals.eyeSignal as eye
 
 def testEyeTrack():
@@ -45,11 +45,12 @@ def testEyeTrack():
     cv2.destroyAllWindows()
 
 def testhr():
-    with open("Logs/05_02-12_26_33.csv") as f:
+    with open("Logs/P1/05_03-09_00_09.csv") as f:
         data = np.array(f.read().splitlines())
 
     c = hrProcesser()
     hrbuffer = Buffer(size=100)
+    gsrbuffer = Buffer(size=100)
     tsbuffer = Buffer(size=100)
 
     #SETUP LIVE PLOTTER
@@ -57,8 +58,13 @@ def testhr():
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
     for i in range(1,len(data)):
-        hrbuffer.add(float(data[i].split(',',3)[2]))
-        tsbuffer.add(data[i].split(',',3)[0])
+        #split log data
+        log_data = data[i].split(',',3)
+        #make buffers
+        tsbuffer.add(log_data[0])
+        gsrbuffer.add(float(log_data[1]))
+        hrbuffer.add(float(log_data[2]))
+
         if len(hrbuffer.data) == hrbuffer.size:
             #Do calculations
             hrdat = np.asarray(qm.moving_average(hrbuffer.data,window=10))
@@ -69,11 +75,13 @@ def testhr():
             disppeaks = []
             for dp in l:
                 disppeaks.append(hrdat[int(dp)])
+            
             #Update plot
             ax.clear()
             ax.set_title("HeartRate: {} ({} Samples)".format(hrs,len(disppeaks)))
             plt.plot(hrbuffer.data)
             plt.plot(hrdat)
+            plt.plot(gsrbuffer.data)
             plt.scatter(l,disppeaks,c='r')
             plt.show()
             plt.pause(0.01)
@@ -180,3 +188,4 @@ def pupil_ratio(image, pupil_cord):
 
 
 #testEyeTrack()
+testhr()
