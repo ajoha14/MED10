@@ -27,8 +27,8 @@ def __main__():
         print("RUNNING IN DEBUG MODE")
     worker = Worker()
     #worker.EstablishBaseline()
-    worker.RecordData()
-    #worker.evaluate()
+    #worker.RecordData()
+    worker.evaluate()
 
 class latinSquare:
     d = misc.getDataFromFile("Evaluation/latinSquare.txt")
@@ -50,9 +50,9 @@ class latinSquare:
 class Worker:
     looping = True
     def __init__(self):
-        self.gsrbuffer = Buffer(1200)
-        self.hrbuffer = Buffer(1200)
-        self.log = Logger()
+        #self.gsrbuffer = Buffer(1200)
+        #self.hrbuffer = Buffer(1200)
+        #self.log = Logger()
         """ls = latinSquare()
         for x in ls.square:
             print(x)
