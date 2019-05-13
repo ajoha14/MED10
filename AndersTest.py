@@ -10,20 +10,24 @@ import Signals.eyeSignal as eye
 
 def testEyeTrack():
     #Initialization
-    #cap = cv2.VideoCapture("C:/Users/Anders S. Johansen/Desktop/test.mp4")
+    cap = cv2.VideoCapture("C:/Users/Anders S. Johansen/Desktop/test.mp4")
 
     pathToDetector = "Models/shape_predictor_68_face_landmarks.dat"
     detector = dlib.get_frontal_face_detector()
     predictor = dlib.shape_predictor(pathToDetector)
     
+    #Plotting iris gradient
+    plt.ion()
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1)
 
     #Run
-    while(True): #cap.isOpened()
-        #ret, frame = cap.read()
-        #cv2.imshow("input", cv2.resize(frame,None, fx=0.2, fy=0.2))
-        #cv2.waitKey(10)
+    while(cap.isOpened()): #cap.isOpened()
+        ret, frame = cap.read()
+        cv2.imshow("input", cv2.resize(frame,None, fx=0.2, fy=0.2))
+        cv2.waitKey(10)
         #print(frame.shape)
-        frame = cv2.imread("C:/Users/Anders S. Johansen/Desktop/im1.jpg")
+        #frame = cv2.imread("C:/Users/Anders S. Johansen/Desktop/im1.jpg")
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         rects = detector(gray,1)
 
@@ -38,7 +42,7 @@ def testEyeTrack():
             #for p in shape:
             #    cv2.circle(f2, (p[0], p[1]), 2, (255,0,0), 2)
             #cv2.imwrite("C:/Users/Anders S. Johansen/Desktop/im1-1.jpg", f2)
-
+            ax.clear()
             segmentEye(l_eye_p, frame)
     #Cleanup
     cap.release()
@@ -85,6 +89,9 @@ def testhr():
             plt.scatter(l,disppeaks,c='r')
             plt.show()
             plt.pause(0.01)
+
+def makeHrSignal():
+    print("lel")
 
 def segmentEye(points, image, min_size=10):
     #Get bounding box
@@ -135,10 +142,10 @@ def segmentEye(points, image, min_size=10):
     #Debug
     print("eye found")
     f3 = cv2.equalizeHist(gray[bb[0][1]:bb[1][1], bb[0][0]:bb[1][0]])
-    cv2.imwrite("C:/Users/Anders S. Johansen/Desktop/im1-5.jpg",f3)
+    #cv2.imwrite("C:/Users/Anders S. Johansen/Desktop/im1-5.jpg",f3)
     cv2.circle(f3, (best_circle[0],best_circle[1]), 0, (255,0,0), 2)
     cv2.circle(f3, (best_circle[0],best_circle[1]), best_circle[2], (255,0,0), 1)
-    cv2.imwrite("C:/Users/Anders S. Johansen/Desktop/im1-4.jpg",f3)
+    #cv2.imwrite("C:/Users/Anders S. Johansen/Desktop/im1-4.jpg",f3)
     cv2.imshow("eye", np.hstack((roi,blob)))
     cv2.waitKey(1)
 
@@ -181,11 +188,15 @@ def auto_canny(image, sigma=0.30):
 def pupil_ratio(image, pupil_cord):
     gradient_x = image[pupil_cord[1], :]
     gradient_x = np.gradient(gradient_x)
-    fout = open("C:/Users/Anders S. Johansen/Desktop/sig.txt","w")
-    for l in gradient_x:
-        fout.write(str(l)+"\n")
-    fout.close()
+    gradient_x = qm.moving_average(gradient_x, 5)
+    peaks = qm.ampd(gradient_x,limit=0.5)
 
+    
+    for p in peaks:
+        cv2.circle(image, (p,pupil_cord[1]), 0, (255,0,0), 2)
+    plt.plot(gradient_x)
+    plt.show()
+    plt.pause(0.01)
 
 #testEyeTrack()
 testhr()
