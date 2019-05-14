@@ -6,10 +6,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import cv2
 
-path = "Logs/Water/P1/"
+path = "Logs/Water/P14/"
 
 for file in os.listdir(path):
     with open(path + file) as f:
+        print("opening file: ", file)
         logData = np.array(f.read().splitlines())
 
         data_out = open("logWithHr.csv","w")
@@ -18,11 +19,16 @@ for file in os.listdir(path):
         tsData = []
         gsrData = []
         indexes = []
+        markers = []
+        ecgoffset = 500
+        hroffset = 100
+        offset = 150
 
         HRp = hrProcesser()
-        hrbuffer = Buffer(size=100)
-        gsrbuffer = Buffer(size=100)
-        tsbuffer = Buffer(size=100)
+        buffersize = 100
+        hrbuffer = Buffer(size=buffersize)
+        gsrbuffer = Buffer(size=buffersize)
+        tsbuffer = Buffer(size=buffersize)
 
         for i in range(1,len(logData)):
             #split log data
@@ -40,18 +46,31 @@ for file in os.listdir(path):
                     tsdat = np.asarray(tsbuffer.data)
                     l = qm.ampd(hrdat,limit=0.5) #Peak Detectoin
                     hrs = HRp.HR(hrdat,tsdat)
-                    hrData.append(float(log_data[2]))
                     hrsData.append(hrs)
-                    gsrData.append(float(log_data[1]))
                     data_out.write("{},{},{}".format(log_data[0], hrs, float(log_data[1])))
-
                     tsData.append(log_data[0])
-            else:
+                else:
+                    hrsData.append(0)
+                gsrData.append(float(log_data[1]))
+                hrData.append(float(log_data[2]))
+
+            if len(log_data) == 1 and log_data is not "":
                 indexes.append(i)
+            if len(log_data) == 2:
+                markers.append(i)
+        gsrmin = min(gsrData)
+        gsrData = [x + offset - gsrmin for x in gsrData]
+
+        for k in range(0,len(hrsData)):
+            if hrsData[k] > 200: hrsData[k] = 0
+
 
         plt.plot(hrData)
         plt.plot(hrsData)
         for index in indexes:
             plt.axvline(index,color="r")
+        for index in markers:
+            plt.axvline(index, color="brown")
         plt.plot(gsrData)
+        plt.title(file)
         plt.show()
