@@ -5,41 +5,45 @@ def printData(data):
     for row in data:
         print(row)
 
-def getAllDataFromResultFolder(seperator = ','):
+def getAllDataFromResultFolder(participant = "Evaluation/Results/",seperator = ','):
     def convertToNumber(string):
-        if str.isdigit(string): return float(string)
-        else: return string
-
-    data = []
-    dirc = os.path.dirname(os.path.abspath("__file__")).replace("\\", "/") + "/Evaluation/Results/"
-    for directory in os.listdir(dirc):
-        for file in directory:
-            if file.endswith(".csv"):
-                print("Opening file: '" + str(file) + "'")
-                with open(dirc+file, 'rt') as f:
-                    reader = csv.reader(f, delimiter=seperator, skipinitialspace=True)
-                    if not data:
-                        for col in reader:
-                            data.append(col)
-                    else:
-                        data.append([row for idx, row in enumerate(reader) if idx == 1][0])
-                continue
-            else:
-                continue
-    for participant in range(0,len(data)):
-        for datapoint in range(0,len(data[participant])):
-            data[participant][datapoint] = convertToNumber(data[participant][datapoint])
-    print(data)
-    return data
+        if str(string).replace(".","").isdigit():return float(string)
+        else:return string
+    result =[]
+    dirc = os.path.dirname(os.path.abspath("__file__")).replace("\\", "/") + "/" + participant
+    for file in os.listdir(dirc):
+        if file.endswith(".csv"):
+            data = [[], [], []]
+            print("Opening file: '" + str(file) + "'")
+            with open(file, 'rt') as f:
+                reader = csv.reader(f, delimiter=seperator, skipinitialspace=True)
+                for col in reader:
+                    data[0].append(convertToNumber(col[0]))
+                    data[1].append(convertToNumber(col[1]))
+                    data[2].append(convertToNumber(col[2]))
+        result.append(data)
+    return result
 
 def getDataFromFile(file, seperator = ','):
-    data = []
+    def convertToNumber(string):
+        if str(string).replace(".","").isdigit():return float(string)
+        else:return string
+    data = [[],[],[],[]]
+    index = 0
     print("Opening file: '" + str(file) + "'")
     with open(file, 'rt') as f:
         reader = csv.reader(f, delimiter=seperator, skipinitialspace=True)
         for col in reader:
-            data.append(col)
-    #data = np.asarray(data)
+            index = index + 1
+            try:
+                data[0].append(convertToNumber(col[0]))
+                data[1].append(convertToNumber(col[1]))
+                data[2].append(convertToNumber(col[2]))
+            except Exception as e:
+                continue
+            if len(col) is not 3:
+                data[3].append(index)
+
     return data
 
 def saveToFile(file,d):
