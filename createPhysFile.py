@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import cv2
 
-path = "Logs/Water/P14/"
+path = "Logs/Water/P20/"
 
 for file in os.listdir(path):
     with open(path + file) as f:
@@ -65,7 +65,7 @@ for file in os.listdir(path):
             if hrsData[k] > 200: hrsData[k] = 0
 
 
-        plt.plot(hrData)
+        #plt.plot(hrData)
         plt.plot(hrsData)
         for index in indexes:
             plt.axvline(index,color="r")
