@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import cv2
 
-path = "Logs/Water/P20/"
+path = "Logs/Lego/P40/"
 
 for file in os.listdir(path):
     with open(path + file) as f:
