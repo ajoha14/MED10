@@ -10,40 +10,54 @@ import Signals.eyeSignal as eye
 
 def testEyeTrack():
     #Initialization
-    cap = cv2.VideoCapture("C:/Users/Anders S. Johansen/Desktop/test.mp4")
+    cap = cv2.VideoCapture("C:/Users/Anders S. Johansen/Desktop/t1.mp4")
 
     pathToDetector = "Models/shape_predictor_68_face_landmarks.dat"
     detector = dlib.get_frontal_face_detector()
     predictor = dlib.shape_predictor(pathToDetector)
-    
     #Plotting iris gradient
     plt.ion()
     fig = plt.figure()
     ax = fig.add_subplot(1,1,1)
-
+    sigout_l = open("sigout_l.csv","w")
+    sigout_r = open("sigout_r.csv","w")
     #Run
     while(cap.isOpened()): #cap.isOpened()
+        res_l = []
+        res_r = []
         ret, frame = cap.read()
-        cv2.imshow("input", cv2.resize(frame,None, fx=0.2, fy=0.2))
-        cv2.waitKey(10)
-        #print(frame.shape)
-        #frame = cv2.imread("C:/Users/Anders S. Johansen/Desktop/im1.jpg")
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        rects = detector(gray,1)
+        if frame is not None:
+            #cv2.imshow("input", cv2.resize(frame,None, fx=0.2, fy=0.2))
+            #cv2.waitKey(10)
+            #print(frame.shape)
+            #frame = cv2.imread("C:/Users/Anders S. Johansen/Desktop/im1.jpg")
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            rects = detector(gray,1)
 
-        for (i,face) in enumerate(rects):
-            #Get facial landmark points
-            shape = predictor(gray, face)
-            shape = shape_to_np(shape) #36-41(left eye), 42-47(right eye)
-            l_eye_p = shape[36:42]
-            r_eye_p = shape[42:48]
-            
-            #f2 = frame
-            #for p in shape:
-            #    cv2.circle(f2, (p[0], p[1]), 2, (255,0,0), 2)
-            #cv2.imwrite("C:/Users/Anders S. Johansen/Desktop/im1-1.jpg", f2)
-            ax.clear()
-            segmentEye(l_eye_p, frame)
+            for (i,face) in enumerate(rects):
+                #Get facial landmark points
+                shape = predictor(gray, face)
+                shape = shape_to_np(shape) #36-41(left eye), 42-47(right eye)
+                l_eye_p = shape[36:42]
+                r_eye_p = shape[42:48]
+                
+                #f2 = frame
+                #for p in shape:
+                #    cv2.circle(f2, (p[0], p[1]), 2, (255,0,0), 2)
+                #cv2.imwrite("C:/Users/Anders S. Johansen/Desktop/im1-1.jpg", f2)
+                ax.clear()
+                l = segmentEye(l_eye_p, frame)
+                r = segmentEye(r_eye_p, frame)
+                print("Left Eye Ratio:{}".format(l))
+                print("Right Eye Ratio:{}".format(r))
+                res_l.append(l)
+                res_r.append(r)
+    sigout_l.writelines(res_l)
+    sigout_r.writelines(res_r)
+    plt.plot(res)
+    plt.show()
+    plt.pause(0.01)
+
     #Cleanup
     cap.release()
     cv2.destroyAllWindows()
@@ -136,18 +150,17 @@ def segmentEye(points, image, min_size=10):
         return 0.0
     circles = np.uint16(np.around(circles))
     best_circle = circles[0,0]
-    pupil_ratio(roi, best_circle)
-    
     #Iris Location is at the cente
     #Debug
-    print("eye found")
-    f3 = cv2.equalizeHist(gray[bb[0][1]:bb[1][1], bb[0][0]:bb[1][0]])
+    #print("eye found")
+    #f3 = cv2.equalizeHist(gray[bb[0][1]:bb[1][1], bb[0][0]:bb[1][0]])
     #cv2.imwrite("C:/Users/Anders S. Johansen/Desktop/im1-5.jpg",f3)
-    cv2.circle(f3, (best_circle[0],best_circle[1]), 0, (255,0,0), 2)
-    cv2.circle(f3, (best_circle[0],best_circle[1]), best_circle[2], (255,0,0), 1)
+    #cv2.circle(f3, (best_circle[0],best_circle[1]), 0, (255,0,0), 2)
+    #cv2.circle(f3, (best_circle[0],best_circle[1]), best_circle[2], (255,0,0), 1)
     #cv2.imwrite("C:/Users/Anders S. Johansen/Desktop/im1-4.jpg",f3)
-    cv2.imshow("eye", np.hstack((roi,blob)))
-    cv2.waitKey(1)
+    #cv2.imshow("eye", np.hstack((roi,blob)))
+    #cv2.waitKey(1)
+    return pupil_ratio(roi, best_circle)
 
 def rect_to_bb(rect):
     x = rect.left()
@@ -189,14 +202,19 @@ def pupil_ratio(image, pupil_cord):
     gradient_x = image[pupil_cord[1], :]
     gradient_x = np.gradient(gradient_x)
     gradient_x = qm.moving_average(gradient_x, 5)
-    peaks = qm.ampd(gradient_x,limit=0.5)
+    peaks = qm.ampd(gradient_x, limit=0.5)
+    if len(peaks) == 4:
+        l_iris = peaks[3] - peaks[0]
+        l_pupil = peaks[2] - peaks[1]
+    else:
+        return 0 
 
-    
-    for p in peaks:
-        cv2.circle(image, (p,pupil_cord[1]), 0, (255,0,0), 2)
-    plt.plot(gradient_x)
-    plt.show()
-    plt.pause(0.01)
+    #for p in peaks:
+    #    cv2.circle(image, (p,pupil_cord[1]), 0, (255,0,0), 2)
+    #plt.plot(gradient_x)
+    #plt.show()
+    #plt.pause(0.01)
+    return (l_pupil/l_iris)
 
-#testEyeTrack()
-testhr()
+testEyeTrack()
+#testhr()
