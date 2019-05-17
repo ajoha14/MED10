@@ -20,8 +20,6 @@ for file in os.listdir(path):
         gsrData = []
         indexes = []
         markers = []
-        ecgoffset = 500
-        hroffset = 100
         offset = 150
 
         HRp = hrProcesser()
